@@ -1,0 +1,27 @@
+  line(1) word(9) written so far have used objects 
+  line(2) word(2) that have well-defined lifetimes. Global objects 
+  line(3) word(4) the program ends. Local, automatic objects 
+  line(4) word(10) entered and exited. Local static objects 
+  line(6) word(8) to supporting automatic and static objects, 
+  line(7) word(1) C++ lets us allocate objects 
+  line(7) word(5) dynamically. Dynamically allocated objects; 
+  line(10) word(4) explicitly freed. Properly freeing dynamic objects 
+  line(11) word(5) bugs. To make using dynamic objects 
+  line(12) word(4) types that manage dynamically allocated objects. 
+  line(12) word(10) Smart pointers ensure that the objects 
+  line(15) word(9) used only static or stack memory. 
+  line(15) word(11) Static memory 
+  line(16) word(2) is used for local static objects 
+  line(17) word(9) defined outside any function. Stack memory 
+  line(18) word(1) is used for nonstatic objects 
+  line(18) word(11) allocated in static or stack memory 
+  line(19) word(9) destroyed by the compiler. Stack objects 
+  line(20) word(10) are defined is executing; static objects 
+  line(23) word(7) addition to static or stack memory, 
+  line(23) word(15) also has a pool of memory 
+  line(24) word(6) that it can use. This memory 
+  line(25) word(4) Programs use the heap for objects 
+  line(25) word(11) they dynamically allocate—that is, for objects 
+  line(26) word(13) controls the lifetime of dynamic objects; 
+  line(27) word(7) code must explicitly destroy such objects, 
+memory/objects occurs 26 times.

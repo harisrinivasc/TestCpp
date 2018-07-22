@@ -1,0 +1,27 @@
+The programs we’ve written so far have used objects that have well-defined lifetimes.
+Global objects are allocated at program start-up and destroyed when the program
+ends. Local, automatic objects are created and destroyed when the block in which
+they are defined is entered and exited. Local static objects are allocated before
+their first use and are destroyed when the program ends.
+In addition to supporting automatic and static objects, C++ lets us allocate
+objects dynamically. Dynamically allocated objects; have a lifetime that is independent
+of where they are created; they exist until they are explicitly freed.
+
+Properly freeing dynamic objects turns out to be a surprisingly rich source of bugs.
+To make using dynamic objects safer, the library defines two smart pointer types that
+manage dynamically allocated objects. Smart pointers ensure that the objects to which
+they point are automatically freed when it is appropriate to do so.
+
+Our programs have used only static or stack memory. Static memory is used for local
+static objects (§ 6.1.1, p. 205), for class static data members (§ 7.6, p. 300),
+and for variables defined outside any function. Stack memory is used for nonstatic
+objects defined inside functions. Objects allocated in static or stack memory are
+automatically created and destroyed by the compiler. Stack objects exist only while the
+block in which they are defined is executing; static objects are allocated before they
+are used, and they are destroyed when the program ends.
+
+In addition to static or stack memory, every program also has a pool of memory
+that it can use. This memory is referred to as the free store or heap. Programs use
+the heap for objects that they dynamically allocate—that is, for objects that the
+program allocates at run time. The program controls the lifetime of dynamic objects;
+our code must explicitly destroy such objects, when they are no longer needed.
