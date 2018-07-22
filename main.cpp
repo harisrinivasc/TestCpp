@@ -204,6 +204,176 @@ const vector<vector<int>> ComponentInputs ={{0,1,1,0,0,0},
 int NumWaysStair(const int Total, unordered_map<int,int> &ResultMap, const vector<int> &Steps);
 int NumWaysNsum(const int Sum, const vector<int>::size_type VecIdx, unordered_map<string,int> &ResultMap, const vector<int> &InputVec);
 
+class BstType;
+class BstType
+{
+public:
+	int key;
+	string value;
+	int size;
+	shared_ptr<BstType> left;
+	shared_ptr<BstType> right;
+	BstType() : key(0), value(""), size(1), left(nullptr), right(nullptr) {}
+	~BstType()
+	{		
+		cout << "Destruct: Key: " << key << " Value: " << value << " Size: " << size << endl;
+	}
+};
+
+class GraphType
+{
+private:
+	int NumVertex;
+	int NumConnections;
+	vector<unordered_set<int> > Connections;
+public:
+	GraphType(const int N)
+	{
+		NumVertex = N;
+		NumConnections = 0;
+		for(int i = 0; i < N; ++i)
+			Connections.emplace_back(unordered_set<int> ());
+	}
+	unordered_set<int> &GetConnections(const int Vertex)
+	{
+		if (Vertex < NumVertex)
+			return Connections[Vertex];
+		else
+			return (unordered_set<int>());
+	}
+	int GetDegree(const int Vertex)
+	{
+		if (Vertex < NumVertex)
+			return Connections[Vertex].size();
+		else
+			return -9999;
+	}
+	void AddConnection(const int v1, const int v2)
+	{
+		if ((v1 < NumVertex) && (v2 < NumVertex))
+		{
+			//Add connection to both vertices
+			auto ret1 = Connections[v1].insert(v2);
+			auto ret2 = Connections[v2].insert(v1);
+			//If either of the elements was not inserted (connection already present), do not
+			//increment connection (edge) count
+			if ((true == ret1.second) || (true == ret2.second))
+				++NumConnections;
+		}
+	}
+	void PrintConnections(void)
+	{
+		cout << "Print connections:" << endl;
+		int cnt = 0;
+		for (const auto &i : Connections)
+		{
+			cout << "Vertex: " << cnt++ << " connected to ";
+			for (const auto &j : i)
+				cout << j << " ";
+			cout << endl;
+		}
+	}
+};
+
+class Dfs : public GraphType
+{
+private:
+	vector<bool> Visited;
+	vector<int> ParentVertex;
+	const int Source;
+	int count;
+public:
+	Dfs(const int N, const int SourceNode) : GraphType(N), Source(SourceNode)
+	{
+		for (int i = 0; i < N; ++i)
+		{
+			Visited.push_back(false);
+			ParentVertex.push_back(i);
+		}
+	}
+	void PerformDfs()
+	{
+		cout << "DFS trace from source: " << Source << endl;
+		PerformDfs(Source);
+		cout << endl;
+	}
+	void PerformDfs(const int v)
+	{
+		cout << v << " ";
+		Visited[v] = true;
+		++count;
+		for(const auto &i : GetConnections(v))
+			if (!Visited[i])
+			{
+				ParentVertex[i] = v;
+				PerformDfs(i);
+			}				
+	}
+};
+
+class Bfs : public GraphType
+{
+private:
+	vector<bool> Visited;
+	vector<int> ParentVertex;
+	const int Source;
+	queue<int> VertexToVisit;
+	int count;
+public:
+	Bfs(const int N, const int SourceNode) : GraphType(N), Source(SourceNode)
+	{
+		for (int i = 0; i < N; ++i)
+		{
+			Visited.push_back(false);
+			ParentVertex.push_back(i);
+		}
+		VertexToVisit.push(Source);
+	}
+	void PerformBfs(void)
+	{
+		cout << "BFS trace from source: " << Source << endl;
+		Visited[Source] = true;
+		cout << Source << " ";
+		while (!VertexToVisit.empty())
+		{
+			int v = VertexToVisit.front();
+			VertexToVisit.pop();
+			for (const auto &i : GetConnections(v))
+				if (!Visited[i])
+				{
+					Visited[i] = true;
+					ParentVertex[i] = v;
+					++count;
+					VertexToVisit.push(i);
+					cout << i << " ";
+				}
+		}
+		cout << endl;
+	}
+};
+
+Dfs MyDfs(11, 0);
+Bfs MyBfs(11, 0);
+
+shared_ptr<BstType> Head = nullptr;
+void InsertKey(const int key, const string value);
+shared_ptr<BstType> InsertKey(shared_ptr<BstType> Node, const int key, const string value);
+void DeleteKey(const int key);
+shared_ptr<BstType> DeleteKey(shared_ptr<BstType> Node, const int key);
+string GetValue(const int key);
+void DeleteBst(void);
+void DeleteBst(shared_ptr<BstType> Node);
+void PrintBst(void);
+void PrintBst(const shared_ptr<BstType> Node);
+int GetSize(const shared_ptr<BstType> Node);
+int GetMin(void);
+shared_ptr<BstType> GetMin(const shared_ptr<BstType> Node);
+int GetMax(void);
+void DeleteMin(void);
+shared_ptr<BstType> DeleteMin(shared_ptr<BstType> Node);
+int GetRank(const int key);
+int GetRank(shared_ptr<BstType> Node, const int key);
+
 int main(int argc, const char * argv[])
 {
     // insert code here...
@@ -1663,7 +1833,268 @@ int main(int argc, const char * argv[])
         cout << i.first << " " << i.second << endl;
     */
     
+    	/*
+	//Binary search tree BST
+	cout << "1: Insert key and value" << endl;
+	cout << "2: Delete key" << endl;
+	cout << "3: Get value[key]" << endl;
+	cout << "4: Print" << endl;
+	cout << "5: Delete BST" << endl;
+	cout << "6: Get min. key" << endl;
+	cout << "7: Get rank of a key" << endl;
+	cout << "0: Exit" << endl;
+	int option = 99;
+	while (cin >> option)
+	{
+		if (0 == option)
+			break;
+		else if (1 == option)
+		{
+			int key;
+			string value;
+			cin >> key >> value;
+			InsertKey(key, value);
+		}
+		else if (2 == option)
+		{
+			int key;
+			cin >> key;
+			DeleteKey(key);
+		}
+		else if (3 == option)
+		{
+			int key;
+			cin >> key;
+			cout << "Get: Key: " << key << " Value: " << GetValue(key) << endl;
+		}
+		else if (4 == option)
+			PrintBst();
+		else if (5 == option)
+			DeleteBst();
+		else if (6 == option)
+			cout << "Get Min: Key: " << GetMin() << endl;
+		else if (7 == option)
+		{
+			int key;
+			cin >> key;
+			cout << "Get: Rank: " << GetRank(key) << " Key: " << key << endl;
+		}
+		else
+		{
+			cout << "Invalid option: " << option << endl;
+			break;
+		}
+	}
+	DeleteBst();
+	*/
+
+	//Graph
+	const int N = 15;
+	int TestConnect[N][2] = { { 0,1 }, { 0,2 }, { 3,4 }, { 5,8 }, { 4,0 },
+							  { 8,8 }, { 9,2 }, { 6,4 }, { 2,5 }, { 0,5 },
+							  { 3,0 }, { 7,8 }, { 2,7 }, { 9,4 }, { 6,8 } };
+
+	for (int i = 0; i < N; ++i)
+	{
+		MyDfs.AddConnection(TestConnect[i][0], TestConnect[i][1]);
+		MyBfs.AddConnection(TestConnect[i][0], TestConnect[i][1]);
+	}
+	MyDfs.PrintConnections();
+	MyDfs.PerformDfs();
+
+	MyBfs.PrintConnections();
+	MyBfs.PerformBfs();
+    
     return 0;
+}
+
+void InsertKey(const int key, const string value)
+{
+	Head = InsertKey(Head, key, value);
+	cout << "Insert complete: Key: " << key << " Value: " << value << endl;
+}
+
+shared_ptr<BstType> InsertKey(shared_ptr<BstType> Node, const int key, const string value)
+{
+	//Key is not present. Create a new node, and update size
+	if (nullptr == Node)
+	{
+		shared_ptr<BstType> NewNode = make_shared<BstType>();
+		NewNode->key = key;
+		NewNode->value = value;
+		return NewNode;
+	}
+
+	if (key == Node->key)
+		//Key is already present. Just replace value with new one and return;
+		Node->value = value;
+	else if (key > Node->key)
+		Node->right = InsertKey(Node->right, key, value);
+	else
+		Node->left = InsertKey(Node->left, key, value);
+	
+	Node->size = GetSize(Node->left) + GetSize(Node->right) + 1;
+	return Node;
+}
+
+void DeleteKey(const int key)
+{
+	Head = DeleteKey(Head, key);
+}
+
+shared_ptr<BstType> DeleteKey(shared_ptr<BstType> Node, const int key)
+{
+	if (nullptr == Node)
+	{
+		cout << "Delete: Key: " << key << " not found" << endl;
+		return Node;
+	}
+
+	if (key > Node->key)
+		Node->right = DeleteKey(Node->right, key);
+	else if (key < Node->key)
+		Node->left = DeleteKey(Node->left, key);
+	else
+	{
+		cout << "Delete: Key: " << key << endl;
+
+		//Key found
+		if (nullptr == Node->left)
+		{
+			shared_ptr<BstType> ret = Node->right;
+			Node.reset();
+			return ret;
+		}
+		else if (nullptr == Node->right)
+		{
+			shared_ptr<BstType> ret = Node->left;
+			Node.reset();
+			return ret;
+		}
+		else
+		{
+			//Since key to be deleted has 2 childs, Replace the node to be deleted with its min. node of right tree
+			shared_ptr<BstType> MinNode = GetMin(Node->right);
+			Node->key = MinNode->key;
+			Node->value = MinNode->value;
+			Node->right = DeleteMin(Node->right); //Delete the min. node of right tree
+		}
+	}
+
+	Node->size = GetSize(Node->left) + GetSize(Node->right) + 1;
+	return Node;
+}
+
+string GetValue(const int key)
+{
+	shared_ptr<BstType> temp = Head;
+	while (nullptr!=temp)
+	{
+		if (key == temp->key)
+			return temp->value;
+		else if (key > temp->key)
+			temp = temp->right;
+		else
+			temp = temp->left;
+	}
+	return "Not Found!!!";
+}
+
+void DeleteBst(void)
+{
+	DeleteBst(Head);
+	Head = nullptr;
+	cout << "Delete BST complete" << endl;
+}
+
+void DeleteBst(shared_ptr<BstType> Node)
+{
+	if (nullptr == Node)
+		return;
+	DeleteBst(Node->left);
+	DeleteBst(Node->right);
+	Node.reset();
+}
+
+void PrintBst(void)
+{
+	PrintBst(Head);
+	cout << "Print BST complete" << endl;
+}
+
+void PrintBst(const shared_ptr<BstType> Node)
+{
+	if (nullptr == Node)
+		return;
+	PrintBst(Node->left);
+	cout << "Print: Key: " << Node->key << " Value: " << Node->value << " Size: " << Node->size << endl;
+	PrintBst(Node->right);
+}
+
+int GetSize(const shared_ptr<BstType> Node)
+{
+	if (nullptr == Node)
+		return 0;
+	return Node->size;
+}
+
+int GetRank(const int key)
+{
+	return GetRank(Head, key);
+}
+
+int GetRank(const shared_ptr<BstType> Node, const int key)
+{
+	if (nullptr == Node)
+		return 0;
+
+	if (key == Node->key)
+		return GetSize(Node->left);
+	else if (key < Node->key)
+		return GetRank(Node->left, key);
+	else
+	{
+		return (GetRank(Node->right, key) + GetSize(Node->left)+1);
+	}
+}
+
+int GetMin(void)
+{
+	if (nullptr != Head)
+		return GetMin(Head)->key;
+	else
+		return -9999;
+}
+
+shared_ptr<BstType> GetMin(const shared_ptr<BstType> Node)
+{
+	if (nullptr == Node->left)
+		return Node;
+	return GetMin(Node->left);
+}
+
+void DeleteMin(void)
+{
+	if(nullptr != Head)
+		Head = DeleteMin(Head);
+}
+
+shared_ptr<BstType> DeleteMin(shared_ptr<BstType> Node)
+{
+	if (nullptr == Node->left)
+	{
+		shared_ptr<BstType> ret = Node->right;
+		Node.reset();
+		return ret;
+	}		
+	Node->left = DeleteMin(Node->left);
+	Node->size = GetSize(Node->left) + GetSize(Node->right) + 1;
+	return Node;
+}
+
+int GetMax(void)
+{
+	return 0;
 }
 
 int NumWaysNsum(const int Sum, const vector<int>::size_type VecIdx, unordered_map<string,int> &ResultMap, const vector<int> &InputVec)
