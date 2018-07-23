@@ -374,6 +374,17 @@ shared_ptr<BstType> DeleteMin(shared_ptr<BstType> Node);
 int GetRank(const int key);
 int GetRank(shared_ptr<BstType> Node, const int key);
 
+//Knights tour
+#define N 8 //chess board size NxN
+#define CHESS_RC_TO_BOARD(R,C) ((R*N)+C)
+vector<pair<int, int>> KnightDirections = { { -1,-2 },{ -2,-1 },{ 1,2 },{ 2,1 },
+											{ -1,2 },{ 2,-1 },{ 1,-2 },{ -2,1 } };
+vector<pair<int, int>> PreTraverse, PostTraverse;
+bitset<N*N> SqVisited;
+vector<int> SqParent(N*N, -1);
+int LastSqVisited = 0;
+void KnightsTourAlgm(const int R, const int C);
+
 int main(int argc, const char * argv[])
 {
     // insert code here...
@@ -1888,6 +1899,7 @@ int main(int argc, const char * argv[])
 	DeleteBst();
 	*/
 
+	/*
 	//Graph
 	const int N = 15;
 	int TestConnect[N][2] = { { 0,1 }, { 0,2 }, { 3,4 }, { 5,8 }, { 4,0 },
@@ -1904,8 +1916,66 @@ int main(int argc, const char * argv[])
 
 	MyBfs.PrintConnections();
 	MyBfs.PerformBfs();
-    
-    return 0;
+    */
+	
+	//Knight's tour
+	pair<int, int> StartingPnt = make_pair(7, 7);
+	int StartingLoc = CHESS_RC_TO_BOARD(StartingPnt.first, StartingPnt.second);
+	SqParent[StartingLoc] = StartingLoc;
+	KnightsTourAlgm(StartingPnt.first, StartingPnt.second);
+	for (int i = 0; i < N*N; ++i)
+	{
+		if (0 == i%N && i > 0)
+			cout << endl;
+		cout << setfill('0') << setw(2) << i << " ";
+	}
+	cout << endl << endl;
+
+	cout << "AllSqVisited: " << SqVisited.all() << endl;
+	cout << "PreTraverse: ";
+	for (const auto &i : PreTraverse)
+		cout << CHESS_RC_TO_BOARD(i.first, i.second) << " ";
+	cout << endl << endl;
+
+	cout << "PostTraverse: ";
+	for (const auto &i : PostTraverse)
+		cout << CHESS_RC_TO_BOARD(i.first, i.second) << " ";
+	cout << endl << endl;
+
+	cout << "Path: ";
+	int KnightPathSq = LastSqVisited;
+	while (KnightPathSq != StartingLoc)
+	{
+		cout << KnightPathSq << " ";
+		KnightPathSq = SqParent[KnightPathSq];
+	}
+	cout << KnightPathSq << endl << endl;
+
+	return 0;
+}
+
+void KnightsTourAlgm(const int R, const int C)
+{
+	int CurrBoardSq = CHESS_RC_TO_BOARD(R, C);
+	SqVisited.set(CurrBoardSq);
+	if (SqVisited.all())
+		LastSqVisited = CurrBoardSq;
+	PreTraverse.push_back(make_pair(R, C));
+	for (const auto &i : KnightDirections)
+	{
+		pair<int, int> NextSq = make_pair(R + i.first, C + i.second);
+		int NextBoardSq = CHESS_RC_TO_BOARD(NextSq.first, NextSq.second);
+		if ((NextSq.first >= 0) && (NextSq.first < N) &&
+			(NextSq.second >= 0) && (NextSq.second < N))
+		{
+			if (!SqVisited.test(NextBoardSq))
+			{
+				SqParent[NextBoardSq] = CurrBoardSq;
+				KnightsTourAlgm(NextSq.first, NextSq.second);
+			}
+		}
+	}
+	PostTraverse.push_back(make_pair(R, C));
 }
 
 void InsertKey(const int key, const string value)
