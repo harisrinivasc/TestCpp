@@ -21,8 +21,11 @@
 #include <stack>
 #include <string>
 #include <random>
+#include <bitset>
+#include <iomanip> 
 //#include <cmath>
 //#include "Sales_item.h"
+
 
 //using std::string;
 using namespace std;
@@ -374,16 +377,26 @@ shared_ptr<BstType> DeleteMin(shared_ptr<BstType> Node);
 int GetRank(const int key);
 int GetRank(shared_ptr<BstType> Node, const int key);
 
-//Knights tour
-#define N 8 //chess board size NxN
-#define CHESS_RC_TO_BOARD(R,C) ((R*N)+C)
+//Knights tour (and N-queens problem)
+#define CHESS_BOARD_SIZE 8 //chess board size NxN
+#define CHESS_RC_TO_BOARD(R,C) ((R*CHESS_BOARD_SIZE)+C)
 vector<pair<int, int>> KnightDirections = { { -1,-2 },{ -2,-1 },{ 1,2 },{ 2,1 },
 											{ -1,2 },{ 2,-1 },{ 1,-2 },{ -2,1 } };
 vector<pair<int, int>> PreTraverse, PostTraverse;
-bitset<N*N> SqVisited;
-vector<int> SqParent(N*N, -1);
+bitset<CHESS_BOARD_SIZE*CHESS_BOARD_SIZE> SqVisited;
+vector<int> SqParent(CHESS_BOARD_SIZE*CHESS_BOARD_SIZE, -1);
 int LastSqVisited = 0;
 void KnightsTourAlgm(const int R, const int C);
+
+//N - queens problem
+int NqueensLoopCtr = 0;
+vector<pair<int, int>> NqueensLocVec;
+vector<vector<bool>> NextQueenLocTable (CHESS_BOARD_SIZE, vector<bool>(CHESS_BOARD_SIZE, true));
+void NqueensProblem(void);
+bool IsValidChessSquare(const int R, const int C);
+void UpdateNextQueenLocTable(void);
+bool NqueensProblemSol2(const int Col);
+bool IsQueenPosValid(const int Row, const int Col);
 
 int main(int argc, const char * argv[])
 {
@@ -1917,15 +1930,16 @@ int main(int argc, const char * argv[])
 	MyBfs.PrintConnections();
 	MyBfs.PerformBfs();
     */
-	
+
+	/*
 	//Knight's tour
 	pair<int, int> StartingPnt = make_pair(7, 7);
 	int StartingLoc = CHESS_RC_TO_BOARD(StartingPnt.first, StartingPnt.second);
 	SqParent[StartingLoc] = StartingLoc;
 	KnightsTourAlgm(StartingPnt.first, StartingPnt.second);
-	for (int i = 0; i < N*N; ++i)
+	for (int i = 0; i < CHESS_BOARD_SIZE*CHESS_BOARD_SIZE; ++i)
 	{
-		if (0 == i%N && i > 0)
+		if (0 == i%CHESS_BOARD_SIZE && i > 0)
 			cout << endl;
 		cout << setfill('0') << setw(2) << i << " ";
 	}
@@ -1950,8 +1964,122 @@ int main(int argc, const char * argv[])
 		KnightPathSq = SqParent[KnightPathSq];
 	}
 	cout << KnightPathSq << endl << endl;
+	*/
+
+	//N-queens problem
+	NqueensProblemSol2(0);
+	
+	for (int i = 0; i < CHESS_BOARD_SIZE*CHESS_BOARD_SIZE; ++i)
+	{
+		if (0 == i%CHESS_BOARD_SIZE && i > 0)
+			cout << endl;
+		cout << setfill('0') << setw(2) << i << " ";
+	}
+	cout << endl << endl;
+
+	cout << "LoopCtr: " << NqueensLoopCtr << " QueenPos: " << endl;
+	for (int i = 0; i < CHESS_BOARD_SIZE; ++i)
+	{
+		for (int j = 0; j < CHESS_BOARD_SIZE; ++j)
+		{
+			bool KeyFound = false;
+			for (const auto &k : NqueensLocVec)
+				if (k.first == i && k.second == j)
+				{
+					cout << "QQ ";
+					KeyFound = true;
+					break;
+				}
+			if(!KeyFound)
+				cout << "-- ";
+		}
+		cout << endl;
+	}
+	cout << endl;
 
 	return 0;
+}
+
+bool NqueensProblemSol2(const int Col)
+{
+	NqueensLoopCtr++;
+
+	if (Col >= CHESS_BOARD_SIZE)
+		return true;
+	int Row = 0;
+	while (Row < CHESS_BOARD_SIZE)
+	{
+		NqueensLocVec.push_back(make_pair(Row, Col));
+		if (IsQueenPosValid(Row, Col) && NqueensProblemSol2(Col + 1))
+			return true;
+		NqueensLocVec.pop_back();
+		++Row;
+	}
+	return false;
+}
+
+bool IsQueenPosValid(const int Row, const int Col)
+{
+	//Compare only until 1 minus the last element
+	for (int k = 0; (NqueensLocVec.size() > 1) && (k < NqueensLocVec.size()-1); ++k)
+	{
+		//Compare only rows and diagonal elements. Column need not be compared 
+		//as we are filling-up the chess board from left to right
+		if ((Row == NqueensLocVec[k].first) || 
+			(abs(Row - NqueensLocVec[k].first) == abs(Col - NqueensLocVec[k].second)))
+			return false;
+	}
+	return true;
+}
+
+void NqueensProblem(void)
+{
+	NqueensLoopCtr++;
+
+	for (int i = 0; i < CHESS_BOARD_SIZE; ++i)
+		for (int j = 0; j < CHESS_BOARD_SIZE; ++j)
+			if (NextQueenLocTable[i][j])
+			{
+				NqueensLocVec.push_back(make_pair(i, j));
+				//Update possible next queen locations array
+				UpdateNextQueenLocTable();
+				NqueensProblem();
+			}
+
+	//At this point, there are no more possible squares for Queen. Check total size
+	if (NqueensLocVec.size() != CHESS_BOARD_SIZE)
+	{
+		//Remove the previous queen position and iterate again
+		NqueensLocVec.pop_back();
+		UpdateNextQueenLocTable();
+	}
+}
+
+void UpdateNextQueenLocTable(void)
+{
+	bool CollisionFound = false;
+	for (int i = 0; i < CHESS_BOARD_SIZE; ++i)
+		for (int j = 0; j < CHESS_BOARD_SIZE; ++j)
+		{
+			CollisionFound = false;
+			for(auto k = NqueensLocVec.begin(); k != NqueensLocVec.end(); ++k)
+			{
+				if ((i == k->first) || (j == k->second) || (abs(i - k->first) == abs(j - k->second)))
+				{
+					CollisionFound = true;
+					NextQueenLocTable[i][j] = false;
+					break;
+				}
+			}
+			if (!CollisionFound)
+				NextQueenLocTable[i][j] = true;
+		}
+}
+
+bool IsValidChessSquare(const int R, const int C)
+{
+	return ((R >= 0) && (R < CHESS_BOARD_SIZE) &&
+		(C >= 0) && (C < CHESS_BOARD_SIZE));
 }
 
 void KnightsTourAlgm(const int R, const int C)
@@ -1965,8 +2093,7 @@ void KnightsTourAlgm(const int R, const int C)
 	{
 		pair<int, int> NextSq = make_pair(R + i.first, C + i.second);
 		int NextBoardSq = CHESS_RC_TO_BOARD(NextSq.first, NextSq.second);
-		if ((NextSq.first >= 0) && (NextSq.first < N) &&
-			(NextSq.second >= 0) && (NextSq.second < N))
+		if (IsValidChessSquare(NextSq.first, NextSq.second))
 		{
 			if (!SqVisited.test(NextBoardSq))
 			{
@@ -2460,17 +2587,17 @@ bool Popstack(stack<T> &S, T &Val)
     return false;
 }
 
-long long int Factorial(const int N)
+long long int Factorial(const int Temp)
 {
     static int cnt = 0;
     ++cnt;
     
-    cout << "N: " << N << " Cnt: " << cnt << endl;
+    cout << "N: " << Temp << " Cnt: " << cnt << endl;
     
-    if(N<2)
+    if(Temp<2)
         return 1;
     else
-        return (N*Factorial(N-1));
+        return (Temp*Factorial(Temp-1));
 }
 
 int BinSearchRecursive(const int S, const vector<int> &A, const vector<int>::size_type lo, const vector<int>::size_type hi)
