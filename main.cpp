@@ -1966,6 +1966,7 @@ int main(int argc, const char * argv[])
 	cout << KnightPathSq << endl << endl;
 	*/
 
+	/*
 	//N-queens problem
 	NqueensProblemSol2(0);
 	
@@ -1996,6 +1997,80 @@ int main(int argc, const char * argv[])
 		cout << endl;
 	}
 	cout << endl;
+	*/
+
+	/*
+	//Find largest set of ngbr elements in MxN grid with same color (similar to flood fill)
+	#define COLOR_ARRAY_M	4
+	#define COLOR_ARRAY_N	4
+	typedef pair<int, int> xycoord;
+	class ColorArrayType
+	{
+	public:
+		int color;
+		set<xycoord> coord;
+	};
+	vector<ColorArrayType> ColorArrayOutput;
+	const vector<vector<int>> ColorInput = {{1,1,2,3},
+											{1,2,2,2},
+											{1,1,2,3},
+											{2,2,1,3}}; //each color represented by a number
+	vector<vector<bool>> ColorVisited(COLOR_ARRAY_M, vector<bool>(COLOR_ARRAY_N, false));
+	vector<xycoord> NextCoord;
+	const vector<xycoord> NgbrCoord = { {1,0},{-1,0},{0,1},{0,-1} };
+
+	//Perform DFS for each node, for that particular color
+	for(auto i = 0; i != COLOR_ARRAY_M; ++i)
+		for (auto j = 0; j != COLOR_ARRAY_N; ++j)
+		{
+			if (!ColorVisited[i][j])
+			{
+				NextCoord.clear(); //vector (Stack) should be empty anyway
+				NextCoord.push_back(make_pair(i, j)); //add first element to stack
+
+				ColorArrayType Temp; //create a new entry in output structure
+				Temp.color = ColorInput[i][j];
+
+				while (!NextCoord.empty())
+				{
+					xycoord CurrCoord = NextCoord.back();
+					NextCoord.pop_back();
+					ColorVisited[CurrCoord.first][CurrCoord.second] = true;
+					Temp.coord.insert(CurrCoord);
+
+					//Add ngbrs that have the same color as the current cell's color. Do so only if its not already 
+					//visited yet
+					for (const auto &k : NgbrCoord)
+					{
+						xycoord Ngbr = make_pair(CurrCoord.first + k.first, CurrCoord.second + k.second);
+						if((Ngbr.first >= 0 ) && (Ngbr.first < COLOR_ARRAY_M ) &&
+							(Ngbr.second >= 0) && (Ngbr.second < COLOR_ARRAY_N))
+							if(ColorInput[i][j] == ColorInput[Ngbr.first][Ngbr.second])
+								if(!ColorVisited[Ngbr.first][Ngbr.second])
+									NextCoord.push_back(Ngbr);
+					}
+				}
+
+				ColorArrayOutput.push_back(Temp); //Push the new vector element with connected coordinates to output vector
+			}			
+		}
+	*/
+
+	/*
+	//Find max square
+	#define MAX_SQUARE_M	6
+	#define MAX_SQUARE_N	5
+	#define MAX_SQ_SIZE (R,C) MIN(MAX_SQUARE_M-R, MAX_SQUARE_N-C)
+	#define MIN_SQ_SIZE 2
+	const vector<vector<int>> MaxSquareInput = { { 1,1,0,0,1,1 },
+												 { 1,0,1,1,1,1 },
+												 { 1,1,1,1,1,1 },
+												 { 1,1,1,1,1,1 },
+												 { 1,1,0,1,1,1 } };
+	//Perform 'square-search' (DFS) for each node, for that particular color
+	for (auto i = 0; i != MAX_SQUARE_M; ++i)
+		for (auto j = 0; j != MAX_SQUARE_N; ++j)
+	*/
 
 	return 0;
 }
