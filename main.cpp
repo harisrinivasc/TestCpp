@@ -2071,7 +2071,21 @@ int main(int argc, const char * argv[])
 	for (auto i = 0; i != MAX_SQUARE_M; ++i)
 		for (auto j = 0; j != MAX_SQUARE_N; ++j)
 	*/
+	
+	//Autocomplete(AC) from dictionary
+	const string AC_input = "d";
+	const vector<string> AC_dictionary = {"dust", "elephant", "action", "define", "dear", "deal"};
+	//build map (hash table) with all combinations of dictionary
+	unordered_multimap<string, string> AC_dictionary_map;
+	for (const auto &i : AC_dictionary)
+		for (string::size_type j = 0; j < i.size(); ++j)
+			AC_dictionary_map.insert(make_pair(i.substr(0, j + 1), i));
 
+	auto AC_output = AC_dictionary_map.equal_range(AC_input);
+	if(AC_output.first != AC_dictionary_map.end())
+		for (auto i = AC_output.first; i != AC_output.second; ++i)
+			cout << i->second << endl;
+	
 	return 0;
 }
 
