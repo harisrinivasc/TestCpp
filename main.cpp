@@ -2056,21 +2056,81 @@ int main(int argc, const char * argv[])
 		}
 	*/
 
-	/*
-	//Find max square
-	#define MAX_SQUARE_M	6
-	#define MAX_SQUARE_N	5
-	#define MAX_SQ_SIZE (R,C) MIN(MAX_SQUARE_M-R, MAX_SQUARE_N-C)
-	#define MIN_SQ_SIZE 2
-	const vector<vector<int>> MaxSquareInput = { { 1,1,0,0,1,1 },
-												 { 1,0,1,1,1,1 },
-												 { 1,1,1,1,1,1 },
-												 { 1,1,1,1,1,1 },
-												 { 1,1,0,1,1,1 } };
-	//Perform 'square-search' (DFS) for each node, for that particular color
-	for (auto i = 0; i != MAX_SQUARE_M; ++i)
-		for (auto j = 0; j != MAX_SQUARE_N; ++j)
-	*/
+    /*
+    //Find max square
+    #define MAX_SQUARE_M    5
+    #define MAX_SQUARE_N    6
+    const vector<vector<int>> MaxSquareInput = { { 1,1,0,0,1,1 },
+                                                 { 1,0,1,1,1,1 },
+                                                 { 1,1,1,1,1,1 },
+                                                 { 1,1,1,1,1,1 },
+                                                 { 1,1,1,1,1,1 } };
+    vector<vector<int>> MaxSquareWorking (MAX_SQUARE_M, vector<int>(MAX_SQUARE_N,0));
+    //Identify end nodes of possible squares
+    //Copy 1st row and 1st column to working matrix
+    int MaxSquareSize = 0, MaxSquarei = 0, MaxSquarej = 0;
+    for (auto i = 0; i != MAX_SQUARE_M; ++i)
+        MaxSquareWorking[i][0] = MaxSquareInput[i][0];
+    for (auto j = 0; j != MAX_SQUARE_N; ++j)
+        MaxSquareWorking[0][j] = MaxSquareInput[0][j];
+    for (auto i = 1; i != MAX_SQUARE_M; ++i)
+    {
+        for (auto j = 1; j != MAX_SQUARE_N; ++j)
+        {
+            if(!MaxSquareInput[i][j])
+                MaxSquareWorking[i][j] = 0;
+            else
+            {
+                MaxSquareWorking[i][j] = min(min(MaxSquareWorking[i][j-1], MaxSquareWorking[i-1][j]),MaxSquareWorking[i-1][j-1]) + 1;
+                if( MaxSquareSize <= MaxSquareWorking[i][j] )
+                {
+                    MaxSquareSize = MaxSquareWorking[i][j];
+                    MaxSquarei = i;
+                    MaxSquarej = j;
+                }
+            }
+            cout << MaxSquareWorking[i][j] << " ";
+        }
+        cout << endl;
+    }
+    */
+     
+    /*
+    //XOR doubly linked list (DLL) prev and next ptrs
+    class DLLnodeType
+    {
+    public:
+        int NodeAddr;
+        int BothPtr;
+    };
+    vector<DLLnodeType> DLLnodes;
+    const int DLLsize = 8;
+    for(int i = 0; i < DLLsize; ++i)
+    {
+        DLLnodeType Temp;
+        Temp.NodeAddr = i+2;
+        DLLnodes.push_back(Temp);
+    }
+    for(auto i = 0; i < DLLnodes.size(); ++i)
+    {
+        if(0==i)
+            DLLnodes[i].BothPtr = 0 ^ DLLnodes[i+1].NodeAddr;
+        else if(DLLnodes.size()-1==i)
+            DLLnodes[i].BothPtr = 0 ^ DLLnodes[i-1].NodeAddr;
+        else
+            DLLnodes[i].BothPtr = DLLnodes[i+1].NodeAddr ^ DLLnodes[i-1].NodeAddr;
+    }
+    int HeadPtr = DLLnodes[0].NodeAddr;
+    //Traverse
+    int Prev = 0, Curr = HeadPtr, Next = 0;
+    for(auto i = 0; i < DLLnodes.size(); ++i)
+    {
+        Curr = DLLnodes[i].NodeAddr;
+        Next = DLLnodes[i].BothPtr ^ Prev;
+        Prev = DLLnodes[i].NodeAddr;
+        cout << "Curr: " << Curr << " Next: " << Next << " Prev: " << Prev << endl;
+    }
+    */
 	
 	//Autocomplete(AC) from dictionary
 	const string AC_input = "d";
