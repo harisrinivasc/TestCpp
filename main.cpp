@@ -2132,6 +2132,7 @@ int main(int argc, const char * argv[])
     }
     */
 	
+	/*
 	//Autocomplete(AC) from dictionary
 	const string AC_input = "d";
 	const vector<string> AC_dictionary = {"dust", "elephant", "action", "define", "dear", "deal"};
@@ -2145,8 +2146,131 @@ int main(int argc, const char * argv[])
 	if(AC_output.first != AC_dictionary_map.end())
 		for (auto i = AC_output.first; i != AC_output.second; ++i)
 			cout << i->second << endl;
-	
+	*/
+		
+	//Knapsack problem
+	const int KNAPSACK_SIZE = 5;
+	const int KNAPSACK_CAPACITY = 10;
+	const vector<int> knapsack_val = {5,3,1,3,2};
+	const vector<int> knapsack_weights = {1,2,4,2,5};
+	//const vector<int> knapsack_val = {565, 406, 194, 130, 435, 367, 230, 315, 393,
+		//125, 670, 892, 600, 293, 712, 147, 421, 255};
+	//const vector<int> knapsack_weights = knapsack_val;
+	//const vector<int> knapsack_val = { 360, 83, 59, 130, 431, 67, 230, 52, 93,
+		//	125, 670, 892, 600, 38, 48, 147, 78, 256,
+		//	63, 17, 120, 164, 432, 35, 92, 110, 22,
+		//	42, 50, 323, 514, 28, 87, 73, 78, 15,
+		//	26, 78, 210, 36, 85, 189, 274, 43, 33,
+		//	10, 19, 389, 276, 312 };
+
+	//const vector<int> knapsack_weights = { 7, 0, 30, 22, 80, 94, 11, 81, 70,
+		//	64, 59, 18, 0, 36, 3, 8, 15, 42,
+		//	9, 0, 42, 47, 52, 32, 26, 48, 55,
+		//	6, 29, 84, 2, 4, 18, 56, 7, 29,
+		//	93, 44, 71, 3, 86, 66, 31, 65, 0,
+		//	79, 20, 65, 52, 13 };
+	//Knapsack recursive
+	//cout << Knapsack_Recursive(KNAPSACK_SIZE - 1, KNAPSACK_CAPACITY, knapsack_val, knapsack_weights) << endl;
+
+	//stack/iterative solution 
+	stack<tuple<int, int, int, int>> knapsack_stack; //first - capacity, second - array index, third - return value for max comparision, 
+	//fourth - stage for recursive call
+	knapsack_stack.push(make_tuple(KNAPSACK_CAPACITY, KNAPSACK_SIZE - 1, 0, 0));
+	int ret_value = 0;
+	int curridx, curr_capacity, curr_stage, curr_max_val;
+	unordered_map<string,int> knapsack_memoize;
+	while (!knapsack_stack.empty())
+	{
+		curr_max_val = get<2>(knapsack_stack.top());
+		curridx = get<1>(knapsack_stack.top());
+		curr_capacity = get<0>(knapsack_stack.top());
+		curr_stage = get<3>(knapsack_stack.top());
+		knapsack_stack.pop();
+
+		string memoize_key = to_string(curridx) + ":" + to_string(curr_capacity);
+		if (knapsack_memoize.find(memoize_key) != knapsack_memoize.end())
+		{
+			ret_value = knapsack_memoize[memoize_key];
+			continue;
+		}
+
+		switch (curr_stage)
+		{
+			case 0:
+			{
+				if (0 == curr_capacity || curridx < 0)
+				{
+					ret_value = 0;
+					knapsack_memoize.insert(make_pair(memoize_key, ret_value));
+				}
+				else if (knapsack_weights[curridx] > curr_capacity)
+				{
+					//create a new stack element
+					knapsack_stack.push(make_tuple(curr_capacity, curridx - 1, 0, 0));
+				}
+				else
+				{
+					//advance the stage to 1 and push it back in the stack (current snapshot needs to be processed after returning from recursive call
+					knapsack_stack.push(make_tuple(curr_capacity, curridx, 0, 1));
+
+					//create a new stack element
+					knapsack_stack.push(make_tuple(curr_capacity - knapsack_weights[curridx], curridx - 1, 0, 0));
+				}
+				continue;
+				break;
+			}
+			case 1:
+			{
+				//advance the stage to 2 and push it back in the stack (current snapshot needs to be processed after returning from recursive call
+				knapsack_stack.push(make_tuple(curr_capacity, curridx, ret_value + knapsack_val[curridx], 2));
+
+				//create a new stack element
+				knapsack_stack.push(make_tuple(curr_capacity, curridx - 1, 0, 0));
+
+				continue;
+				break;
+			}
+			case 2:
+			{
+				ret_value = max(ret_value, curr_max_val);
+				knapsack_memoize.insert(make_pair(memoize_key, ret_value));
+				continue;
+				break;
+			}
+			default:
+			{
+				cerr << "Unepxected stage" << endl;
+				break;
+			}
+		}
+	}	
+
 	return 0;
+}
+
+unordered_map<string,int> knapsack_memoize_rec;
+int Knapsack_Recursive(const int curridx, const int curr_capacity, const vector<int> &knapsack_val, const vector<int> &knapsack_weights)
+{
+	int ret;
+	string memoize_key = to_string(curridx) + ":" + to_string(curr_capacity);
+	if (knapsack_memoize_rec.find(memoize_key) == knapsack_memoize_rec.end())
+	{
+		if (0 == curr_capacity || curridx < 0)
+			ret = 0;
+		else if (knapsack_weights[curridx] > curr_capacity)
+			ret = Knapsack_Recursive(curridx - 1, curr_capacity, knapsack_val, knapsack_weights);
+		else
+		{
+			int temp1, temp2;
+			temp1 = Knapsack_Recursive(curridx - 1, curr_capacity - knapsack_weights[curridx], knapsack_val, knapsack_weights) + knapsack_val[curridx];
+			temp2 = Knapsack_Recursive(curridx - 1, curr_capacity, knapsack_val, knapsack_weights);
+			ret = max(temp1, temp2);
+		}
+		knapsack_memoize_rec.insert(make_pair(memoize_key,ret));
+		return ret;
+	}
+	else
+		return knapsack_memoize_rec[memoize_key];
 }
 
 bool NqueensProblemSol2(const int Col)
