@@ -23,6 +23,7 @@
 #include <random>
 #include <bitset>
 #include <iomanip> 
+#include <tuple>
 //#include <cmath>
 //#include "Sales_item.h"
 
@@ -397,6 +398,7 @@ bool IsValidChessSquare(const int R, const int C);
 void UpdateNextQueenLocTable(void);
 bool NqueensProblemSol2(const int Col);
 bool IsQueenPosValid(const int Row, const int Col);
+int Knapsack_Recursive(const int curridx, const int curr_capacity, const vector<int> &knapsack_val, const vector<int> &knapsack_weights);
 
 int main(int argc, const char * argv[])
 {
