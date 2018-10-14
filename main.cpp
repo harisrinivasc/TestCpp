@@ -24,6 +24,7 @@
 #include <bitset>
 #include <iomanip>
 #include <tuple>
+#include <climits>
 //#include <cmath>
 //#include "Sales_item.h"
 
@@ -415,6 +416,15 @@ shared_ptr<BstType> BuildTreeFromInPreOrder
 int FindInorderIdx(const vector<char> &Inorder, const char val, const int lo, const int hi);
 bool IsSplitArraySumPossible(const vector<int> &A, const int idx, const bool IsB1, int B1sum, int B2sum);
 long int CustomPower(const int x, const int y);
+int MaxProduct(const vector<int> &A, const int idx, const int cnt);
+void LogBishopPath(vector<vector<int>> &Temp, const int R, const int C, const int N);
+bool PairSortComp(pair<int,int> i, pair<int,int> j);
+void IslandsBfs(const int row, const int col, vector<vector<bool>> &Visited, const vector<vector<int>> &IslandsInput);
+int LargestNonAdjSum(const vector<int> &InputVec, const int idx, unordered_map<int,int> &Memo);
+void AddElemMedian(const int i, priority_queue<int, vector<int>, greater<int>> &MinHeap, priority_queue<int> &MaxHeap);
+void BalanceMedian(priority_queue<int, vector<int>, greater<int>> &MinHeap, priority_queue<int> &MaxHeap);
+float GetMedian(const priority_queue<int, vector<int>, greater<int>> &MinHeap, const priority_queue<int> &MaxHeap);
+void StringPerm(const vector<string> &Input, const string::size_type idx, const string &input_str, unordered_set<string> &StrPermOutputMap);
 
 int main(int argc, const char * argv[])
 {
@@ -2162,30 +2172,114 @@ int main(int argc, const char * argv[])
     
     /*
     //Knapsack problem
-    const int KNAPSACK_SIZE = 4;
-    const int KNAPSACK_CAPACITY = 7;
+    const int KNAPSACK_SIZE = 50;
+    const int KNAPSACK_CAPACITY = 850;
     //const vector<int> knapsack_val = {5,3,1,3,2};
     //const vector<int> knapsack_weights = {1,2,4,2,5};
-    const vector<int> knapsack_val = {2,3,4,6};
-    const vector<int> knapsack_weights = {2,3,4,5};
+    //const vector<int> knapsack_val = {2,3,4,6};
+    //const vector<int> knapsack_weights = {2,3,4,5};
     //const vector<int> knapsack_val = {565, 406, 194, 130, 435, 367, 230, 315, 393,
     //125, 670, 892, 600, 293, 712, 147, 421, 255};
     //const vector<int> knapsack_weights = knapsack_val;
-    //const vector<int> knapsack_val = { 360, 83, 59, 130, 431, 67, 230, 52, 93,
-    //    125, 670, 892, 600, 38, 48, 147, 78, 256,
-    //    63, 17, 120, 164, 432, 35, 92, 110, 22,
-    //    42, 50, 323, 514, 28, 87, 73, 78, 15,
-    //    26, 78, 210, 36, 85, 189, 274, 43, 33,
-    //    10, 19, 389, 276, 312 };
+    const vector<int> knapsack_val = { 360, 83, 59, 130, 431, 67, 230, 52, 93,
+        125, 670, 892, 600, 38, 48, 147, 78, 256,
+        63, 17, 120, 164, 432, 35, 92, 110, 22,
+        42, 50, 323, 514, 28, 87, 73, 78, 15,
+        26, 78, 210, 36, 85, 189, 274, 43, 33,
+        10, 19, 389, 276, 312 };
     
-    //const vector<int> knapsack_weights = { 7, 0, 30, 22, 80, 94, 11, 81, 70,
-    //    64, 59, 18, 0, 36, 3, 8, 15, 42,
-    //    9, 0, 42, 47, 52, 32, 26, 48, 55,
-    //    6, 29, 84, 2, 4, 18, 56, 7, 29,
-    //    93, 44, 71, 3, 86, 66, 31, 65, 0,
-    //    79, 20, 65, 52, 13 };
+    const vector<int> knapsack_weights = { 7, 0, 30, 22, 80, 94, 11, 81, 70,
+        64, 59, 18, 0, 36, 3, 8, 15, 42,
+        9, 0, 42, 47, 52, 32, 26, 48, 55,
+        6, 29, 84, 2, 4, 18, 56, 7, 29,
+        93, 44, 71, 3, 86, 66, 31, 65, 0,
+        79, 20, 65, 52, 13 };
     //Knapsack recursive
-    cout << Knapsack_Recursive(KNAPSACK_SIZE - 1, KNAPSACK_CAPACITY, knapsack_val, knapsack_weights) << endl;
+    //cout << Knapsack_Recursive(KNAPSACK_SIZE - 1, KNAPSACK_CAPACITY, knapsack_val, knapsack_weights) << endl;
+    
+    //knapsack iterative/stack solution
+    stack<tuple<int,int,int,int>> knapsack_stack; //1st capacity, 2nd array index, 3rd return value for max comparision,
+    //4th stage for recursive call
+    knapsack_stack.push(make_tuple(KNAPSACK_CAPACITY, KNAPSACK_SIZE-1, 0, 0));
+    int ret_value = 0;
+    int curridx, curr_capacity, curr_stage, curr_max_val;
+    unordered_map<string,int> knapsack_memoize;
+    while(!knapsack_stack.empty())
+    {
+        curr_max_val = get<2>(knapsack_stack.top());
+        curridx = get<1>(knapsack_stack.top());
+        curr_capacity = get<0>(knapsack_stack.top());
+        curr_stage = get<3>(knapsack_stack.top());
+        knapsack_stack.pop();
+        
+        string memoize_key = to_string(curridx) + ":" + to_string(curr_capacity);
+        if(knapsack_memoize.find(memoize_key) != knapsack_memoize.end())
+        {
+            ret_value = knapsack_memoize[memoize_key];
+            continue;
+        }
+        
+        switch (curr_stage) {
+            case 0:
+            {
+                if(0 == curr_capacity || curridx < 0)
+                {
+                    ret_value = 0;
+                    knapsack_memoize.insert(make_pair(memoize_key, ret_value));
+                }
+                else if(knapsack_weights[curridx] > curr_capacity)
+                {
+                    //advance the stage to 3 and push it back to the stack (current snapshot needs to be processed
+                    //after returning from recursive call
+                    knapsack_stack.push(make_tuple(curr_capacity, curridx, 0, 3));
+                    
+                    //create a new stack element
+                    knapsack_stack.push(make_tuple(curr_capacity, curridx-1, 0, 0));
+                }
+                else
+                {
+                    //advance the stage to 1 and push it back to the stack (current snapshot needs to be processed
+                    //after returning from recursive call
+                    knapsack_stack.push(make_tuple(curr_capacity, curridx, 0, 1));
+                    
+                    //create a new stack element
+                    knapsack_stack.push(make_tuple(curr_capacity-knapsack_weights[curridx], curridx-1, 0, 0));
+                }
+                continue;
+                break;
+            }
+            case 1:
+            {
+                //advance the stage to 2 and push it back to the stack (current snapshot needs to be processed
+                //after returning from recursive call
+                knapsack_stack.push(make_tuple(curr_capacity, curridx, ret_value+knapsack_val[curridx], 2));
+                
+                //create a new stack element
+                knapsack_stack.push(make_tuple(curr_capacity, curridx-1, 0, 0));
+                
+                continue;
+                break;
+            }
+            case 2:
+            {
+                ret_value = max(ret_value, curr_max_val);
+                knapsack_memoize.insert(make_pair(memoize_key, ret_value));
+                continue;
+                break;
+            }
+            case 3:
+            {
+                knapsack_memoize.insert(make_pair(memoize_key, ret_value));
+                continue;
+                break;
+            }
+            default:
+            {
+                cerr << "unexpected stage " << curr_stage << endl;
+                break;
+            }
+        }
+    }
     */
     
     /*
@@ -2681,7 +2775,348 @@ int main(int argc, const char * argv[])
     cout << CustomPower(2,10) << endl;
     */
     
+    /*
+    //DCP69 - largest product that can be made by multiplying any three integers.
+    //Below solution doesnt work for some combination of -ve numbers
+    const vector<int> ProdArray {13,10,5,-200,0,-200};
+    cout << MaxProduct(ProdArray, ProdArray.size()-1, 3) << endl;
+    */
+    
+    /*
+    //DCP70 - nth perfect number - number that sums to 10
+    //every perfect number is a multiple of 9 + 1. 1st number is 19.
+    //so start with 19 and increment by 9
+    int PerfectNumCnt = 0;
+    const int N = 144;
+    int i = 19;
+    while(1)
+    {
+        int temp = i;
+        int sum = 0;
+        while(temp != 0)
+        {
+            sum += (temp % 10);
+            temp /= 10;
+        }
+        if(10 == sum)
+        {
+            ++PerfectNumCnt;
+            cout << i << " " << PerfectNumCnt << endl;
+            if(PerfectNumCnt == N)
+            {
+                cout << N << "th perfect number is " << i << endl;
+                break;
+            }
+        }
+        i += 9;
+    }
+     */
+    
+    /*
+    //Number of bishops attack
+    const vector<pair<int,int>> BishopsAttackIn {{make_pair(0,0)}, {make_pair(2,2)}, {make_pair(4,0)}, {make_pair(4,4)}, {make_pair(0,3)},
+        {make_pair(1,4)}};
+    const int BishopsChessSize = 5;
+    vector<vector<int>> BishopsTemp (BishopsChessSize, vector<int>(BishopsChessSize,0));
+    int AttackCnt = 0;
+    for(int i = 0; i < BishopsAttackIn.size(); ++i)
+    {
+        AttackCnt += BishopsTemp[BishopsAttackIn[i].first][BishopsAttackIn[i].second];
+        LogBishopPath(BishopsTemp, BishopsAttackIn[i].first, BishopsAttackIn[i].second, BishopsChessSize);
+    }
+    cout << AttackCnt << endl;
+    */
+    
+    /*
+    //Overlapping intervals (DCP77)
+    vector<pair<int,int>> Intervals {make_pair(1, 3), make_pair(5, 8), make_pair(4, 10), make_pair(20, 25), make_pair(1,10)};
+    vector<pair<int,int>> OutputIntervals;
+    //Sort the input based on start times (first element in pair)
+    sort(Intervals.begin(), Intervals.end(), PairSortComp);
+    pair<int,int> MinMax = make_pair(INT_MAX, INT_MIN);
+    
+    for(int i = 0; i < Intervals.size(); ++i)
+    {
+        if(Intervals[i].second > MinMax.second)
+        {
+            MinMax.second = Intervals[i].second;
+            OutputIntervals.push_back(Intervals[i]);
+        }
+    }
+    */
+    
+    /*
+    //DCP #84 - return number of islands of 1
+    #define ISLANDS_M    6
+    #define ISLANDS_N    5
+    const vector<vector<int>> IslandsInput = { { 1,0,0,0,0 },
+                                               { 0,0,1,1,0 },
+                                               { 0,1,1,0,1 },
+                                               { 0,0,0,0,0 },
+                                               { 1,1,0,0,1 },
+                                               { 1,1,0,0,1 } };
+    int IslandsCnt = 0;
+    vector<vector<bool>> Visited {ISLANDS_M, vector<bool>(ISLANDS_N, false)};
+    for(int row = 0; row < ISLANDS_M; ++row)
+    {
+        for(int col = 0; col < ISLANDS_N; ++col)
+        {
+            if(!Visited[row][col])
+            {
+                Visited[row][col] = true;
+                if(IslandsInput[row][col])
+                {
+                    IslandsBfs(row, col, Visited, IslandsInput);
+                    ++IslandsCnt;
+                }
+            }
+        }
+    }
+    */
+    
+    /*
+    //Find the length of Longest Increasing Subsequence - LIS (DCP #75)
+    //const vector<int> InputVec = {10,8,3,9,2,11,4,7,12,13,14};
+    const vector<int> InputVec = {6,4,5,3,2,1,7,8,9,10,11};
+    vector<int> LisArray (static_cast<int>(InputVec.size()), 1);
+    int MaxLis = LisArray[0];
+    for(int i = 1; i < InputVec.size(); ++i)
+    {
+        for(int j = 0; j < i; ++j)
+        {
+            if(InputVec[i] > InputVec[j])
+                LisArray[i] = max(LisArray[i], LisArray[j]+1);
+        }
+        if(MaxLis < LisArray[i])
+            MaxLis = LisArray[i];
+    }
+    */
+    
+    /*
+    //largest sum of non-adjacent numbers. DCP #9
+    const vector<int> InputVec = {2,-400,6,200,5};
+    unordered_map<int,int> Memo;
+    cout << LargestNonAdjSum(InputVec, InputVec.size()-1, Memo) << endl;
+    */
+    
+    /*
+    //Running median
+    priority_queue<int, vector<int>, greater<int>> RunMedMinHeap;
+    priority_queue<int> RunMedMaxHeap;
+    const vector<int> InputVec = {6,4,5,3,2,1,7,8,9,10,11};
+    for(const auto &i : InputVec)
+    {
+        //Split elements into min. heap and max. heap
+        //all elements <= median should be in max heap.
+        //all elements >= median should in min heap
+        AddElemMedian(i, RunMedMinHeap, RunMedMaxHeap);
+        BalanceMedian(RunMedMinHeap, RunMedMaxHeap);
+        cout << GetMedian(RunMedMinHeap, RunMedMaxHeap) << endl;
+    }
+    */
+    
+    /*
+    //All permutations of a string
+    const string input_str {"abcde"};
+    unordered_set<string> StrPermOutputMap;
+    for(string::size_type i = 0; i < input_str.size(); ++i)
+    {
+        vector<string> temp_vec;
+        temp_vec.push_back(input_str.substr(i,1));
+        StrPermOutputMap.insert(input_str.substr(i,1));
+        for(string::size_type j = i+1; j < input_str.size(); ++j)
+            StringPerm(temp_vec, j, input_str, StrPermOutputMap);
+    }
+    
+    map<int, int> SizeSet;
+    for(string::size_type i = 0; i < input_str.size(); ++i)
+        SizeSet.insert(make_pair(i+1, 0));
+    for(const auto &i : StrPermOutputMap)
+    {
+        cout << i << endl;
+        ++SizeSet[i.size()];
+    }
+    for(const auto &i : SizeSet)
+        cout << i.second << " ";
+    cout << endl;
+    */
+    
     return 0;
+}
+
+void StringPerm(const vector<string> &Input, const string::size_type idx, const string &input_str, unordered_set<string> &StrPermOutputMap)
+{
+    if(idx >= input_str.size())
+        return;
+    vector<string> temp_vec;
+    string temp;
+    for(string::size_type i = 0; i < Input.size(); ++i)
+    {
+        const int StrLen = Input[i].size();
+        temp = input_str[idx] + Input[i];
+        
+        if(StrPermOutputMap.find(temp) != StrPermOutputMap.end())
+            continue; //permutation already identified
+        
+        temp_vec.push_back(temp);
+        StrPermOutputMap.insert(temp);
+        for(string::size_type k = 0; k < Input[i].size(); ++k)
+        {
+            temp = Input[i].substr(0,k+1) + input_str.substr(idx,1) + Input[i].substr(k+1, StrLen-k-1);
+            if(StrPermOutputMap.find(temp) != StrPermOutputMap.end())
+                continue; //permutation already identified
+            
+            temp_vec.push_back(temp);
+            StrPermOutputMap.insert(temp);
+        }
+        for(string::size_type k = idx+1; k < input_str.size(); ++k)
+            StringPerm(temp_vec, k, input_str, StrPermOutputMap);
+    }
+}
+
+void AddElemMedian(const int i, priority_queue<int, vector<int>, greater<int>> &MinHeap, priority_queue<int> &MaxHeap)
+{
+    if(MaxHeap.empty())
+        MaxHeap.push(i);
+    else
+    {
+        if(i < MaxHeap.top())
+            MaxHeap.push(i);
+        else
+            MinHeap.push(i);
+    }
+}
+
+void BalanceMedian(priority_queue<int, vector<int>, greater<int>> &MinHeap, priority_queue<int> &MaxHeap)
+{
+    if((MinHeap.size() - MaxHeap.size()) == 2)
+    {
+        int temp = MinHeap.top();
+        MinHeap.pop();
+        MaxHeap.push(temp);
+    }
+    else if ((MaxHeap.size() - MinHeap.size()) == 2)
+    {
+        int temp = MaxHeap.top();
+        MaxHeap.pop();
+        MinHeap.push(temp);
+    }
+    else if (abs(static_cast<int>(MaxHeap.size()) - static_cast<int>(MinHeap.size())) > 2)
+    {
+        cout << "Error!! Something went wrong. MinHeap size " << MinHeap.size() << " MaxHeap size " << MaxHeap.size() << endl;
+    }
+}
+
+float GetMedian(const priority_queue<int, vector<int>, greater<int>> &MinHeap, const priority_queue<int> &MaxHeap)
+{
+    if(MinHeap.size() == MaxHeap.size())
+        return( static_cast<float>(MinHeap.top()+MaxHeap.top())/2.0 );
+    return( MinHeap.size() > MaxHeap.size() ? MinHeap.top() : MaxHeap.top() );
+}
+
+int LargestNonAdjSum(const vector<int> &InputVec, const int idx, unordered_map<int,int> &Memo)
+{
+    if(idx < 0)
+        return 0;
+    if(0 == idx)
+        return InputVec[0];
+    if(Memo.find(idx) != Memo.end())
+        return Memo[idx];
+    
+    int ret = max(LargestNonAdjSum(InputVec, idx-2, Memo) + InputVec[idx],
+                  LargestNonAdjSum(InputVec, idx-1, Memo));
+    Memo.insert(make_pair(idx,ret));
+                  
+    return(ret);
+}
+
+bool IsIslandValid(const pair<int,int> NextPnt, const int M, const int N,
+                   const vector<vector<int>> &IslandsInput,
+                   const vector<vector<bool>> &Visited)
+{
+    if(NextPnt.first < 0 || NextPnt.first >= M || NextPnt.second < 0 || NextPnt.second >= N)
+        return false;
+    if(!IslandsInput[NextPnt.first][NextPnt.second] || Visited[NextPnt.first][NextPnt.second])
+        return false;
+    return true;
+}
+
+void IslandsBfs(const int row, const int col, vector<vector<bool>> &Visited, const vector<vector<int>> &IslandsInput)
+{
+    queue<pair<int,int>> NgbrQ;
+    NgbrQ.push(make_pair(row, col));
+    while(!NgbrQ.empty())
+    {
+        pair<int,int> Curr = NgbrQ.front(), Next;
+        NgbrQ.pop();
+        Visited[Curr.first][Curr.second] = true;
+        
+        Next = make_pair(Curr.first+1, Curr.second);
+        if(IsIslandValid(Next, Visited.size(), Visited[0].size(), IslandsInput, Visited))
+            NgbrQ.push(Next);
+        
+        Next = make_pair(Curr.first, Curr.second+1);
+        if(IsIslandValid(Next, Visited.size(), Visited[0].size(), IslandsInput, Visited))
+            NgbrQ.push(Next);
+        
+        Next = make_pair(Curr.first-1, Curr.second);
+        if(IsIslandValid(Next, Visited.size(), Visited[0].size(), IslandsInput, Visited))
+            NgbrQ.push(Next);
+        
+        Next = make_pair(Curr.first, Curr.second-1);
+        if(IsIslandValid(Next, Visited.size(), Visited[0].size(), IslandsInput, Visited))
+            NgbrQ.push(Next);
+    }
+}
+    
+bool PairSortComp(pair<int,int> i, pair<int,int> j)
+{
+    if(i.first == j.first)
+        return (j.second < i.second);
+    return (i.first < j.first);
+}
+
+bool CHECK_BISHOP_VALID_CHESS_CELL(const int R, const int C, const int N)
+{
+    if(R<0 || R>=N)
+        return false;
+    if(C<0 || C>=N)
+        return false;
+    return true;
+}
+void LogBishopPath(vector<vector<int>> &Temp, const int R, const int C, const int N)
+{
+    for(int i = 0; i < N; ++i)
+    {
+        if(CHECK_BISHOP_VALID_CHESS_CELL(R+i,C+i,N))
+            Temp[R+i][C+i] = 1;
+        if(CHECK_BISHOP_VALID_CHESS_CELL(R-i,C+i,N))
+            Temp[R-i][C+i] = 1;
+        if(CHECK_BISHOP_VALID_CHESS_CELL(R+i,C-i,N))
+            Temp[R+i][C-i] = 1;
+        if(CHECK_BISHOP_VALID_CHESS_CELL(R-i,C-i,N))
+            Temp[R-i][C-i] = 1;
+    }
+}
+
+int MaxProduct(const vector<int> &A, const int idx, const int cnt)
+{
+    static int loopcnt = 0;
+    ++loopcnt;
+    int ret;
+    
+    cout << "entry " << idx << " " << cnt << " " << endl;
+    
+    if(( idx < 0 ) || (cnt <= 0 ))
+        ret = 1;
+    else if(idx < cnt)
+        ret = MaxProduct(A, idx-1, cnt-1) * A[idx];
+    else
+        ret = max( MaxProduct(A, idx-1, cnt), MaxProduct(A, idx-1, cnt-1)*A[idx] );
+    
+    cout << "ret " << ret << " " << idx << " " << cnt << " " << endl;
+    
+    return ret;
 }
 
 long int CustomPower(const int x, const int y)
