@@ -362,8 +362,8 @@ Dfs MyDfs(11, 0);
 Bfs MyBfs(11, 0);
 
 shared_ptr<BstType> BstHead = nullptr;
-void InsertKey(const int key, const string value);
-shared_ptr<BstType> InsertKey(shared_ptr<BstType> Node, const int key, const string value);
+void InsertKeyToBst(const int key, const string value);
+shared_ptr<BstType> InsertKeyToBst(shared_ptr<BstType> Node, const int key, const string value);
 void DeleteKey(const int key);
 shared_ptr<BstType> DeleteKey(shared_ptr<BstType> Node, const int key);
 string GetValue(const int key);
@@ -425,6 +425,14 @@ void AddElemMedian(const int i, priority_queue<int, vector<int>, greater<int>> &
 void BalanceMedian(priority_queue<int, vector<int>, greater<int>> &MinHeap, priority_queue<int> &MaxHeap);
 float GetMedian(const priority_queue<int, vector<int>, greater<int>> &MinHeap, const priority_queue<int> &MaxHeap);
 void StringPerm(const vector<string> &Input, const string::size_type idx, const string &input_str, unordered_set<string> &StrPermOutputMap);
+int GetNonuniformRandIdx(const int R, const vector<int> &CumProb, int low, int hi);
+bool IsBst(const shared_ptr<BstType> Curr, const int Min, const int Max);
+void InsertKeyToAnyTree(const int key, const string value);
+shared_ptr<BstType> InsertKeyToAnyTree(shared_ptr<BstType> Node, const int key, const string value);
+pair<bool,int> FindLargestBst(const shared_ptr<BstType> Curr, const int Min, const int Max);
+pair<shared_ptr<BstType>,int> FindDeepestNodeTree(const shared_ptr<BstType> Curr, const int level);
+void InvertBinaryTreeRecur(shared_ptr<BstType> Curr);
+void InvertBinaryTreeIter(shared_ptr<BstType> Curr);
 
 int main(int argc, const char * argv[])
 {
@@ -1899,7 +1907,7 @@ int main(int argc, const char * argv[])
              int key;
              string value;
              cin >> key >> value;
-             InsertKey(key, value);
+             InsertKeyToBst(key, value);
          }
          else if (2 == option)
          {
@@ -2941,7 +2949,260 @@ int main(int argc, const char * argv[])
     cout << endl;
     */
     
+    /*
+    //Generate random number from a given list and given distribution
+    const vector<int> RandNums = {10,20,30,40,50};
+    const vector<int> Prob = {3,2,1,1,3}; //probability distribution over 10
+    vector<int> CumProb; //Cummulative probability
+    
+    CumProb.push_back(Prob[0]);
+    for(int i = 1; i < Prob.size(); ++i)
+        CumProb.push_back(CumProb[i-1]+Prob[i]);
+    
+    const int MaxProb = CumProb.back();
+    vector<int> RandInxStats (static_cast<int>(Prob.size()), 0);
+    
+    for(int i = 0; i < 1000; ++i)
+    {
+        int R = (rand() % MaxProb)+1; //generate a random number in the range 1 to MaxProb
+        ++RandInxStats[ GetNonuniformRandIdx(R,CumProb,0,CumProb.size()-1) ];
+    }
+    */
+    
+    /*
+    //Check for number of braces to be removed to make it valid - DCP 86
+    const string BraceIn = ")(((()))())(";
+    stack<char> BraceStack;
+
+    for(int i = 0; i < BraceIn.size(); ++i)
+    {
+        if(BraceIn[i] == '(')
+            BraceStack.push(BraceIn[i]);
+        else if(BraceIn[i] == ')')
+        {
+            if( !BraceStack.empty() && BraceStack.top() == '(' )
+                BraceStack.pop();
+            else
+                BraceStack.push(BraceIn[i]);
+        }
+    }
+    cout << BraceStack.size() << endl;
+    */
+    
+    /*
+    //Check if a tree is BST
+    const vector<int> BstInputInt = {8,6,10,3,7};
+    for(const auto &i : BstInputInt)
+        InsertKeyToAnyTree(i, " ");
+    PrintBst();
+    cout << "Is BST " << IsBst(BstHead, INT_MIN, INT_MAX) << endl;
+    */
+    
+    /*
+    //Find the largest BST in a given tree/subtree - DCP #93
+    const vector<int> TreeInputInt = {8,6,10,3,7};
+    for(const auto &i : TreeInputInt)
+        InsertKeyToAnyTree(i, " ");
+    PrintBst();
+    pair<bool,int> ret = FindLargestBst(BstHead, INT_MIN, INT_MAX);
+    cout << "LargestBST " << ret.first << " " << ret.second << endl;
+    */
+    
+    /*
+    //Find the deepest node in tree - DCP 80
+    const vector<int> TreeInputInt = {1,2,3,4,5,6,7};
+    for(const auto &i : TreeInputInt)
+        InsertKeyToBst(i, " ");
+    PrintBst();
+    pair<shared_ptr<BstType>,int> ret = FindDeepestNodeTree(BstHead, 1);
+    cout << "Deepest node " << (ret.first ? ret.first->key : -1) << " level " << ret.second << endl;
+    */
+    
+    //Invert binary tree - DCP 83
+    const vector<int> TreeInputInt = {1,2,3,4,5,6,7};
+    for(const auto &i : TreeInputInt)
+        InsertKeyToBst(i, " ");
+    PrintBst();
+    InvertBinaryTreeRecur(BstHead);
+    PrintBst();
+    InvertBinaryTreeIter(BstHead);
+    PrintBst();
+    
     return 0;
+}
+
+void InvertBinaryTreeRecur(shared_ptr<BstType> Curr)
+{
+    if(nullptr == Curr)
+        return;
+    
+    //Swap left and right tree
+    shared_ptr<BstType> Temp = Curr->right;
+    Curr->right = Curr->left;
+    Curr->left = Temp;
+    
+    //Do the same for the child nodes
+    InvertBinaryTreeRecur(Curr->left);
+    InvertBinaryTreeRecur(Curr->right);
+}
+
+void InvertBinaryTreeIter(shared_ptr<BstType> Head)
+{
+    if(nullptr == Head)
+        return;
+    
+    queue<shared_ptr<BstType>> PtrQ;
+    PtrQ.push(Head);
+    
+    while(!PtrQ.empty())
+    {
+        shared_ptr<BstType> Curr = PtrQ.front(), Temp;
+        PtrQ.pop();
+        
+        //Swap left and right tree
+        Temp = Curr->right;
+        Curr->right = Curr->left;
+        Curr->left = Temp;
+        
+        //Do the same for the child nodes
+        if(Curr->left)
+            PtrQ.push(Curr->left);
+        if(Curr->right)
+            PtrQ.push(Curr->right);
+    }
+}
+
+pair<shared_ptr<BstType>,int> FindDeepestNodeTree(const shared_ptr<BstType> Curr, const int level)
+{
+    if(nullptr == Curr)
+        return make_pair(nullptr,0);
+    if(nullptr == Curr->left && nullptr == Curr->right)
+        return make_pair(Curr,level);
+    
+    pair<shared_ptr<BstType>,int> left = FindDeepestNodeTree(Curr->left, level+1);
+    pair<shared_ptr<BstType>,int> right = FindDeepestNodeTree(Curr->right, level+1);
+    
+    return (left.second > right.second ? left : right );
+}
+
+pair<bool,int> FindLargestBst(const shared_ptr<BstType> Curr, const int Min, const int Max)
+{
+    if(nullptr == Curr)
+        return make_pair(true,0);
+    
+    pair<bool,int> left = FindLargestBst(Curr->left, Min, Curr->key);
+    pair<bool,int> right = FindLargestBst(Curr->right, Curr->key, Max);
+    
+    if(Curr->key < Min || Curr->key > Max || !left.first || !right.first)
+        return make_pair( false, max(left.second,right.second) );
+    else
+        return make_pair( true, left.second + right.second + 1 );
+}
+
+#if 0
+//Insert key to non-binary search tree
+void InsertKeyToAnyTree(const int key, const string value)
+{
+    if(nullptr == BstHead)
+    {
+        BstHead = make_shared<BstType>();
+        BstHead->key = key;
+        BstHead->value = value;
+        cout << "Insert non-BST head complete: Key: " << key << " Value: " << value << endl;
+        return;
+    }
+    
+    queue<shared_ptr<BstType>> PtrQ;
+    PtrQ.push(BstHead);
+    
+    while(!PtrQ.empty())
+    {
+        shared_ptr<BstType> Curr = PtrQ.front();
+        PtrQ.pop();
+        
+        if(nullptr == Curr->left)
+        {
+            Curr->left = make_shared<BstType>();
+            Curr->left->key = key;
+            Curr->left->value = value;
+            Curr->size = GetSize(Curr->left) + GetSize(Curr->right) + 1;
+            break;
+        }
+        else if(nullptr == Curr->right)
+        {
+            Curr->right = make_shared<BstType>();
+            Curr->right->key = key;
+            Curr->right->value = value;
+            Curr->size = GetSize(Curr->left) + GetSize(Curr->right) + 1;
+            break;
+        }
+        else
+        {
+            PtrQ.push(Curr->left);
+            PtrQ.push(Curr->right);
+        }
+    }
+    
+    cout << "Insert non-BST complete: Key: " << key << " Value: " << value << endl;
+}
+#endif
+
+//Insert key to non-binary search tree
+void InsertKeyToAnyTree(const int key, const string value)
+{
+    BstHead = InsertKeyToAnyTree(BstHead, key, value);
+    cout << "Insert complete: Key: " << key << " Value: " << value << endl;
+}
+
+shared_ptr<BstType> InsertKeyToAnyTree(shared_ptr<BstType> Node, const int key, const string value)
+{
+    //Key is not present. Create a new node, and update size
+    if (nullptr == Node)
+    {
+        shared_ptr<BstType> NewNode = make_shared<BstType>();
+        NewNode->key = key;
+        NewNode->value = value;
+        return NewNode;
+    }
+    
+    int leftsize = GetSize(Node->left);
+    int rightsize = GetSize(Node->right);
+    
+    //To make it balanced, insert in the subtree that has fewer elements
+    if (leftsize > rightsize)
+        Node->right = InsertKeyToAnyTree(Node->right, key, value);
+    else
+        Node->left = InsertKeyToAnyTree(Node->left, key, value);
+    
+    Node->size++;
+    return Node;
+}
+
+bool IsBst(const shared_ptr<BstType> Curr, const int Min, const int Max)
+{
+    if(nullptr == Curr)
+        return true;
+    if(Curr->key < Min || Curr->key > Max)
+        return false;
+    return( IsBst(Curr->left, Min, Curr->key) && IsBst(Curr->right, Curr->key, Max) );
+}
+
+int GetNonuniformRandIdx(const int R, const vector<int> &CumProb, int low, int hi)
+{
+    int mid;
+    
+    while (low <= hi)
+    {
+        mid = (low+hi) >> 1;
+        if((0 == mid) && (R <= CumProb[mid]))
+            break;
+        if(( R > CumProb[mid-1] ) && (R <= CumProb[mid] ))
+            break;
+        (R <= CumProb[mid]) ? (hi = mid - 1) : (low = mid + 1);
+    }
+    
+    //cout << "Dbg R " << R << " Idx " << mid << endl;
+    return mid;
 }
 
 void StringPerm(const vector<string> &Input, const string::size_type idx, const string &input_str, unordered_set<string> &StrPermOutputMap)
@@ -3462,13 +3723,13 @@ void KnightsTourAlgm(const int R, const int C)
     PostTraverse.push_back(make_pair(R, C));
 }
 
-void InsertKey(const int key, const string value)
+void InsertKeyToBst(const int key, const string value)
 {
-    BstHead = InsertKey(BstHead, key, value);
+    BstHead = InsertKeyToBst(BstHead, key, value);
     cout << "Insert complete: Key: " << key << " Value: " << value << endl;
 }
 
-shared_ptr<BstType> InsertKey(shared_ptr<BstType> Node, const int key, const string value)
+shared_ptr<BstType> InsertKeyToBst(shared_ptr<BstType> Node, const int key, const string value)
 {
     //Key is not present. Create a new node, and update size
     if (nullptr == Node)
@@ -3483,9 +3744,9 @@ shared_ptr<BstType> InsertKey(shared_ptr<BstType> Node, const int key, const str
         //Key is already present. Just replace value with new one and return;
         Node->value = value;
     else if (key > Node->key)
-        Node->right = InsertKey(Node->right, key, value);
+        Node->right = InsertKeyToBst(Node->right, key, value);
     else
-        Node->left = InsertKey(Node->left, key, value);
+        Node->left = InsertKeyToBst(Node->left, key, value);
     
     Node->size = GetSize(Node->left) + GetSize(Node->right) + 1;
     return Node;
