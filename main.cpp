@@ -433,6 +433,7 @@ pair<bool,int> FindLargestBst(const shared_ptr<BstType> Curr, const int Min, con
 pair<shared_ptr<BstType>,int> FindDeepestNodeTree(const shared_ptr<BstType> Curr, const int level);
 void InvertBinaryTreeRecur(shared_ptr<BstType> Curr);
 void InvertBinaryTreeIter(shared_ptr<BstType> Curr);
+int HeightBinTree(const shared_ptr<BstType> Curr);
 
 int main(int argc, const char * argv[])
 {
@@ -3018,6 +3019,7 @@ int main(int argc, const char * argv[])
     cout << "Deepest node " << (ret.first ? ret.first->key : -1) << " level " << ret.second << endl;
     */
     
+    /*
     //Invert binary tree - DCP 83
     const vector<int> TreeInputInt = {1,2,3,4,5,6,7};
     for(const auto &i : TreeInputInt)
@@ -3027,10 +3029,26 @@ int main(int argc, const char * argv[])
     PrintBst();
     InvertBinaryTreeIter(BstHead);
     PrintBst();
+    */
+    
+    //Find the max height of a tree
+    const vector<int> TreeInputInt = {1,2,3,4,5,6,7,8};
+    for(const auto &i : TreeInputInt)
+        InsertKeyToAnyTree(i, " ");
+    PrintBst();
+    cout << "Tree height " << HeightBinTree(BstHead) << endl;
     
     return 0;
 }
 
+int HeightBinTree(const shared_ptr<BstType> Curr)
+{
+    if(nullptr == Curr)
+        return 0;
+    return( max(HeightBinTree(Curr->left), HeightBinTree(Curr->right)) + 1);
+}
+
+//O(N) runtime, O(h) space - better for balanced tree (h is height - stored in recursive stack)
 void InvertBinaryTreeRecur(shared_ptr<BstType> Curr)
 {
     if(nullptr == Curr)
@@ -3046,6 +3064,7 @@ void InvertBinaryTreeRecur(shared_ptr<BstType> Curr)
     InvertBinaryTreeRecur(Curr->right);
 }
 
+//O(N) runtime, O(N/2) space - better for unbalanced tree
 void InvertBinaryTreeIter(shared_ptr<BstType> Head)
 {
     if(nullptr == Head)
