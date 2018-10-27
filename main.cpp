@@ -434,6 +434,13 @@ pair<shared_ptr<BstType>,int> FindDeepestNodeTree(const shared_ptr<BstType> Curr
 void InvertBinaryTreeRecur(shared_ptr<BstType> Curr);
 void InvertBinaryTreeIter(shared_ptr<BstType> Curr);
 int HeightBinTree(const shared_ptr<BstType> Curr);
+int SumOfAllNodes(const shared_ptr<BstType> Curr);
+int MaxSumAnyLeafToRoot(const shared_ptr<BstType> Curr);
+pair<shared_ptr<BstType>,int> SumLeafToRoot(const shared_ptr<BstType> Curr, const int key);
+shared_ptr<BstType> LcaBt(const shared_ptr<BstType> Curr, const int A, const int B);
+shared_ptr<BstType> LcaBst(const shared_ptr<BstType> Curr, const int A, const int B);
+bool MyCompDecreasingOrder(const int i, const int j);
+void AllPermOfNumVec(vector<vector<int>> &AllPermVecOp, vector<int> DigitCnt, int level, vector<int> TempVecOp);
 
 int main(int argc, const char * argv[])
 {
@@ -3031,14 +3038,225 @@ int main(int argc, const char * argv[])
     PrintBst();
     */
     
+    /*
     //Find the max height of a tree
     const vector<int> TreeInputInt = {1,2,3,4,5,6,7,8};
     for(const auto &i : TreeInputInt)
         InsertKeyToAnyTree(i, " ");
     PrintBst();
     cout << "Tree height " << HeightBinTree(BstHead) << endl;
+    */
+    
+    //Find least common ancestor for binary tree
+    
+    //Find least common ancestor for binary search tree
+    
+    /*
+    //Find sum from a given leaf to root - tree
+    const vector<int> TreeInputInt = {1,2,3,4,5,6,7};
+    for(const auto &i : TreeInputInt)
+        InsertKeyToAnyTree(i, " ");
+    PrintBst();
+    cout << "sum from leaf to root " << SumLeafToRoot(BstHead,4).second << endl;
+    */
+    
+    /*
+    //Find max. sum of path from any leaf to root - tree
+    //Find sum of all elements under a root tree
+    const vector<int> TreeInputInt = {1,2,3,4,5,6,7};
+    for(const auto &i : TreeInputInt)
+        InsertKeyToAnyTree(i, " ");
+    PrintBst();
+    cout << "Sum of all nodes " << SumOfAllNodes(BstHead) << endl;
+    cout << "Max sum from any leaf to root " << MaxSumAnyLeafToRoot(BstHead) << endl;
+    */
+    
+    /*
+    //Lowest common ancestor (LCA) of Binary tree
+    //Assumptions: both nodes are present in BT, no repetitions
+    const vector<int> TreeInputInt = {1,2,3,4,5,6,7};
+    for(const auto &i : TreeInputInt)
+        InsertKeyToAnyTree(i, " ");
+    PrintBst();
+    shared_ptr<BstType> Ret = LcaBt(BstHead, 7,4);
+    cout << "BT BST " << (Ret ? Ret->key : -1) << endl;
+    */
+    
+    /*
+    //Lowest common ancestor (LCA) of Binary search tree
+    //Assumptions: both nodes are present in BT, no repetitions
+    const vector<int> TreeInputInt = {4,2,1,3,6,5,7};
+    for(const auto &i : TreeInputInt)
+        InsertKeyToBst(i, " ");
+    PrintBst();
+    shared_ptr<BstType> Ret = LcaBst(BstHead, 7,13);
+    cout << "BT BST " << (Ret ? Ret->key : -1) << endl;
+    */
+    
+    /*
+    //Find next greater permutation of a given number - DCP 95
+    const int NextPermNum = 291874;
+    //Convert given number to vector of digits
+    vector<int> NumToVec;
+    int temp = NextPermNum;
+    while(temp)
+    {
+        NumToVec.push_back(temp % 10);
+        temp /= 10;
+    }
+    //Find first digit that is < prev digit
+    int low_idx = -1, high_idx = -1;
+    for(int i = 1; i < NumToVec.size(); ++i)
+        if(NumToVec[i] < NumToVec[i-1])
+        {
+            low_idx = i;
+            break;
+        }
+    if(-1 == low_idx)
+    {
+        //current number is the max of all permutations.
+        //return the smallest permutation
+        low_idx = 0;
+        high_idx = NumToVec.size()-1;
+    }
+    else
+    {
+        //Identify the smallest digit between low_idx-1 to 0
+        high_idx = low_idx-1;
+        for(int i = low_idx-2; i >= 0; --i)
+            if(NumToVec[i] <= NumToVec[i+1])
+                high_idx = i;
+    }
+    //swap low and high idx digits
+    temp = NumToVec[low_idx];
+    NumToVec[low_idx] = NumToVec[high_idx];
+    NumToVec[high_idx] = temp;
+    //Sort all digits between 0 to low_idx-1 in descending order
+    sort(NumToVec.begin(), NumToVec.begin()+low_idx, MyCompDecreasingOrder);
+        
+    //Convert vector of digits to number
+    int NumOutput = 0;
+    for(int i = 0; i < NumToVec.size(); ++i)
+        NumOutput += (NumToVec[i] * pow(10,i));
+    cout << "Next perm " << NumOutput << endl;
+    */
+    
+    /*
+    //all permutations of a string - DCP 96
+    const int AllPermNum = 11874;
+    //Convert given number to vector of digits
+    vector<int> NumToVec;
+    int temp = AllPermNum;
+    while(temp)
+    {
+        NumToVec.push_back(temp % 10);
+        temp /= 10;
+    }
+    //Cnt the num. of occurence of each digit. Use a generic 128 ASCII vector
+    vector<int> DigitCnt (128,0);
+    for(const auto &i : NumToVec)
+        ++DigitCnt['0'+i];
+    vector<vector<int>> AllPermVecOp;
+    vector<int> TempVecOp;
+    AllPermOfNumVec(AllPermVecOp,DigitCnt,NumToVec.size()-1,TempVecOp);
+    //Convert vector of digits to number
+    for(const auto &i : AllPermVecOp)
+    {
+        int NumOutput = 0;
+        for(int j = 0; j < i.size(); ++j)
+            NumOutput += (i[i.size()-j-1] * pow(10,j));
+        cout << NumOutput << endl;
+    }
+    */
     
     return 0;
+}
+
+void AllPermOfNumVec(vector<vector<int>> &AllPermVecOp, vector<int> DigitCnt, int level, vector<int> TempVecOp)
+{
+    if(level < 0)
+    {
+        AllPermVecOp.push_back(TempVecOp);
+        return;
+    }
+    for(int i = 0; i < 128; ++i)
+        if(DigitCnt[i]) //if there is a non-zero cnt value in digit cnt array, add to output vector
+        {
+            TempVecOp.push_back(i-'0');
+            --DigitCnt[i]; //add to output vector and decrement the cnt, and proceed to next digit
+            AllPermOfNumVec(AllPermVecOp,DigitCnt,level-1,TempVecOp);
+            ++DigitCnt[i];
+            TempVecOp.pop_back(); //increment the cnt and remove the val from output variable for next combination
+        }
+}
+
+//Binary function that accepts two elements in the range as arguments, and returns a value convertible to bool.
+//The value returned indicates whether the element passed as first argument is considered to go before the second
+//in the specific strict weak ordering it defines.
+bool MyCompDecreasingOrder(const int i, const int j)
+{
+    return (j<i);
+}
+
+shared_ptr<BstType> LcaBst(const shared_ptr<BstType> Curr, const int A, const int B)
+{
+    if(nullptr == Curr)
+        return nullptr;
+    if(max(A,B) < Curr->key)
+        return LcaBst(Curr->left, A, B);
+    else if(min(A,B) > Curr->key)
+        return LcaBst(Curr->right, A, B);
+    else
+        return Curr;
+}
+
+shared_ptr<BstType> LcaBt(const shared_ptr<BstType> Curr, const int A, const int B)
+{
+    if(nullptr == Curr)
+        return nullptr;
+    if(Curr->key == A || Curr->key == B)
+        return Curr;
+    shared_ptr<BstType> left = LcaBt(Curr->left, A, B);
+    shared_ptr<BstType> right = LcaBt(Curr->right, A, B);
+    if(left==nullptr && right==nullptr)
+        return nullptr;
+    if(left==nullptr)
+        return right;
+    if(right==nullptr)
+        return left;
+    return Curr;
+}
+
+pair<shared_ptr<BstType>,int> SumLeafToRoot(const shared_ptr<BstType> Curr, const int key)
+{
+    if(nullptr == Curr)
+        return make_pair(nullptr,0);
+    if(key == Curr->key)
+        return make_pair(Curr,Curr->key);
+    
+    pair<shared_ptr<BstType>,int> left = SumLeafToRoot(Curr->left, key);
+    pair<shared_ptr<BstType>,int> right = SumLeafToRoot(Curr->right, key);
+    
+    if(left.first != nullptr)
+        return make_pair(left.first, left.second+Curr->key);
+    else if(right.first != nullptr)
+        return make_pair(right.first, right.second+Curr->key);
+    else
+        return make_pair(nullptr,0);
+}
+
+int SumOfAllNodes(const shared_ptr<BstType> Curr)
+{
+    if(nullptr == Curr)
+        return 0;
+    return(SumOfAllNodes(Curr->left) + SumOfAllNodes(Curr->right) + Curr->key);
+}
+
+int MaxSumAnyLeafToRoot(const shared_ptr<BstType> Curr)
+{
+    if(nullptr == Curr)
+        return 0;
+    return( max(MaxSumAnyLeafToRoot(Curr->left), MaxSumAnyLeafToRoot(Curr->right)) + Curr->key );
 }
 
 int HeightBinTree(const shared_ptr<BstType> Curr)
