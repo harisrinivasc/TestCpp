@@ -419,6 +419,7 @@ long int CustomPower(const int x, const int y);
 int MaxProduct(const vector<int> &A, const int idx, const int cnt);
 void LogBishopPath(vector<vector<int>> &Temp, const int R, const int C, const int N);
 bool PairSortComp(pair<int,int> i, pair<int,int> j);
+bool PairSortComp2(pair<int,int> i, pair<int,int> j);
 void IslandsBfs(const int row, const int col, vector<vector<bool>> &Visited, const vector<vector<int>> &IslandsInput);
 int LargestNonAdjSum(const vector<int> &InputVec, const int idx, unordered_map<int,int> &Memo);
 void AddElemMedian(const int i, priority_queue<int, vector<int>, greater<int>> &MinHeap, priority_queue<int> &MaxHeap);
@@ -441,6 +442,11 @@ shared_ptr<BstType> LcaBt(const shared_ptr<BstType> Curr, const int A, const int
 shared_ptr<BstType> LcaBst(const shared_ptr<BstType> Curr, const int A, const int B);
 bool MyCompDecreasingOrder(const int i, const int j);
 void AllPermOfNumVec(vector<vector<int>> &AllPermVecOp, vector<int> DigitCnt, int level, vector<int> TempVecOp);
+bool HopFunction(const int curridx, const vector<int> &HopInput, unordered_map<int,bool> &HopMemo);
+void ReverseWord(string &word, int begin, int end);
+void MergeSortedVecs(const vector<int> &A, const vector<int> &B, vector<int> &Op);
+pair<int,int> TreeLevelMinSum(const shared_ptr<BstType> Curr, int sum, int level);
+bool IsSubtreeCheck(const shared_ptr<BstType> CurrT, const shared_ptr<BstType> CurrS, const shared_ptr<BstType> &BstHeadS );
 
 int main(int argc, const char * argv[])
 {
@@ -3169,7 +3175,368 @@ int main(int argc, const char * argv[])
     }
     */
     
+    /*
+    //Length of longest increasing consecutive elements sequence in an array - DCP 99
+    //O(nlogn) complexity using heap
+    const vector<int> LICSinput = {100,4,200,1,3,2,201,101,102,202,89,99,204,206,203,205};
+    priority_queue<int> licsQ (LICSinput.begin(), LICSinput.end());
+    priority_queue<int> MaxLenQ;
+    int Len = 1;
+    int prev = licsQ.top();
+    licsQ.pop();
+    while(!licsQ.empty())
+    {
+        int curr = licsQ.top();
+        licsQ.pop();
+        if(prev == curr+1)
+            ++Len;
+        else
+        {
+            MaxLenQ.push(Len);
+            Len = 1;
+        }
+        prev = curr;
+    }
+    MaxLenQ.push(Len);
+    cout << "Max len " << MaxLenQ.top() << endl;
+    */
+    
+    /*
+    //Length of longest increasing consecutive elements sequence in an array - DCP 99
+    //O(n) complexity using set
+    const vector<int> LICSinput = {100,4,200,1,3,2,201,101,102,202,89,99,204,206,203,205,5,199};
+    unordered_set<int> licsSET (LICSinput.begin(), LICSinput.end());
+    int MaxLen = INT_MIN;
+    int array_idx = 0;
+    while(!licsSET.empty() && array_idx < LICSinput.size())
+    {
+        int CurrLen = 1;
+        int curr_elem = LICSinput[array_idx];
+        int left = curr_elem-1;
+        int right = curr_elem+1;
+        ++array_idx;
+        
+        while(licsSET.find(left) != licsSET.end())
+        {
+            ++CurrLen;
+            licsSET.erase(left);
+            --left;
+        }
+        while(licsSET.find(right) != licsSET.end())
+        {
+            ++CurrLen;
+            licsSET.erase(right);
+            ++right;
+        }
+        
+        if(MaxLen < CurrLen)
+            MaxLen = CurrLen;
+        licsSET.erase(curr_elem);
+    }
+    cout << "Max len " << MaxLen << endl;
+     */
+    
+    /*
+    //Least number of steps between given sequence of co-ordinates - DCP 100
+    const vector<pair<int,int>> SeqSteps = {make_pair(0,0), make_pair(1,7), make_pair(2,0), make_pair(4,8), make_pair(0,1)};
+    int stepcnt = 0;
+    int xdiff, ydiff;
+    for(int i = 1; i < SeqSteps.size(); ++i)
+    {
+        xdiff = abs(SeqSteps[i].first - SeqSteps[i-1].first);
+        ydiff = abs(SeqSteps[i].second - SeqSteps[i-1].second);
+        stepcnt += min(xdiff,ydiff);
+        stepcnt += abs(xdiff-ydiff);
+    }
+    cout << stepcnt << endl;
+    */
+    
+    /*
+    //Find 2 prime integers that sum up to a given even number - DCP 101
+    vector<int> PrimeNums = {2}; //look-up table for all prime numbers between 2 and PrimeNumMax
+    const int PrimeNumMax = 100000;
+    int IsPrime = true;
+    for(unsigned int i = 3; i < PrimeNumMax; i=i+2)
+    {
+        IsPrime = true;
+        for(const auto &j : PrimeNums)
+        {
+            if(0 == i%j)
+            {
+                IsPrime = false;
+                break;
+            }
+        }
+        if(IsPrime)
+            PrimeNums.push_back(i);
+    }
+    const unordered_set<int> PrimeSet (PrimeNums.begin(), PrimeNums.end());
+    
+    const int PrimeSumInput = 787976;
+    int diff = 0;
+    if(PrimeSumInput > PrimeNumMax)
+        cerr << "Prime sum input > max range" << endl;
+    else
+    {
+        for(const auto &i : PrimeNums)
+        {
+            diff = PrimeSumInput-i;
+            if(PrimeSet.find(diff) != PrimeSet.end())
+            {
+                cout << i << " " << diff << endl;
+                break;
+            }
+        }
+    }
+    */
+    
+    /*
+    //Find contiguous subarray that sum to a given number - DPC  102
+    const vector<int> ContigSumInput = {22,0,1,144,6,20};
+    const int FindSum = 44;
+    int CurrSum = FindSum;
+    int startidx = 0, endidx = 0;
+    for(int i = 0; i < ContigSumInput.size(); ++i)
+    {
+        CurrSum -= ContigSumInput[i];
+        endidx = i;
+
+        if(CurrSum < 0)
+        {
+            while((CurrSum < 0) && (startidx <= endidx))
+            {
+                CurrSum += ContigSumInput[startidx];
+                startidx++;
+            }
+        }
+        if(0 == CurrSum)
+        {
+            cout << "Subarray found!! " << startidx << " " << endidx << endl;
+            break;
+        }
+    }
+    if(CurrSum != 0)
+        cout << "Contiguous subarray not found" << endl;
+    */
+    
+    /*
+    //hop steps - DCP 106
+    const vector<int> HopInput = {3,1,0,1};
+    unordered_map<int,bool> HopMemo;
+    cout << HopFunction(0, HopInput, HopMemo) << endl;
+    */
+    
+    /*
+    //reverse a line - DCP 113
+    string ReverseLine = "hello  world here";
+    ReverseWord(ReverseLine, 0, ReverseLine.size()-1); //reverse entire line
+    cout << ReverseLine << endl;
+    
+    int begin = 0, end = 0;
+    while(end < ReverseLine.size())
+    {
+        //Reverse word in-between spaces
+        ++end;
+        if((ReverseLine[end] == ' ') || (end == ReverseLine.size()))
+        {
+            ReverseWord(ReverseLine, begin, end-1);
+            begin = end+1;
+        }
+    }
+    cout << ReverseLine << endl;
+    */
+    
+    /*
+    //reverse a line but keep the order of delimiters - DCP 114
+    const string ReverseLine = "hello/*world?here";
+    string ReverseLineOp (ReverseLine.size(), ' ');
+    queue<string> ReverseQ;
+    stack<string> ReverseStack;
+    const unordered_set<char> Delim = {'/', '*', '?', ' '};
+    string TempS;
+    
+    int begin = 0, end = 0;
+    while(end < ReverseLine.size())
+    {
+        if(Delim.find(ReverseLine[end]) != Delim.end())
+        {
+            TempS = ReverseLine.substr(ReverseLine.begin()+begin, ReverseLine.begin()+end-1);
+            ReverseStack.push(TempS);
+     }
+     }
+    */
+    
+    /*
+    //find the smallest set of numbers that cover all the intervals - DPC 119
+    vector<pair<int,int>> Intervals {make_pair(1, 3), make_pair(5, 8), make_pair(4, 10), make_pair(20, 25), make_pair(1,10)};
+    vector<int> OutputIntervals = {Intervals[0].second};
+    
+    //Sort the input based on start times (first element in pair)
+    sort(Intervals.begin(), Intervals.end(), PairSortComp2);
+    
+    for(int i = 1; i < Intervals.size(); ++i)
+    {
+        if(Intervals[i].first <= OutputIntervals.back())
+            continue;
+        if(OutputIntervals.size() > 1)
+            OutputIntervals.pop_back();
+        OutputIntervals.push_back(Intervals[i].first);
+    }
+     */
+    
+    /*
+    //Square the sorted elements and give output in sorted order - DCP 118
+    const vector<int> SquareIn = {-10,-8,-8,-7,-3,-1,0,7,8,8,10,11,12,13,17};
+    int Negvecsize = 0;
+    for(const auto &i: SquareIn)
+        if(i < 0)
+            ++Negvecsize;
+        else
+            break;
+    vector<int> NegVec (Negvecsize,0), PosVec (SquareIn.size()-Negvecsize,0);
+    vector<int> SquareOp;
+    //Split input array into +ve and -ve vectors
+    for(int i = 0; i < Negvecsize; ++i)
+        NegVec[i] = abs(SquareIn[Negvecsize-i-1]);
+    for(int i = Negvecsize; i < SquareIn.size(); ++i)
+        PosVec[i-Negvecsize] = SquareIn[i];
+    //Merge the +ve and -ve sorted vectors
+    MergeSortedVecs(NegVec, PosVec, SquareOp);
+    //Square the elements
+    for(int i = 0; i < SquareOp.size(); ++i)
+        SquareOp[i] *= SquareOp[i];
+    */
+    
+    /*
+    //Find level of min. sum of a tree - DCP 117
+    const vector<int> TreeInputInt = {5,4,3,2,-10,6};
+    for(const auto &i : TreeInputInt)
+        InsertKeyToBst(i, " ");
+    PrintBst();
+    auto ret = TreeLevelMinSum(BstHead, 0, 0);
+    cout << "Sum: " << ret.first << " Level: " << ret.second << endl;
+    */
+    
+    /*
+    //check if a tree 't' or its subtree has a same value and strcuture as another tree 's' - DCP 115
+    shared_ptr<BstType> BstHeadT = nullptr, BstHeadS = nullptr;
+    const vector<int> TreeInputT = {5,4,3,2,-10,7,6,8};
+    for(const auto &i : TreeInputT)
+        BstHeadT = InsertKeyToBst(BstHeadT,i, " ");
+    PrintBst(BstHeadT);
+    const vector<int> TreeInputS = {7,6,8};
+    for(const auto &i : TreeInputS)
+        BstHeadS = InsertKeyToBst(BstHeadS,i, " ");
+    PrintBst(BstHeadS);
+    cout << IsSubtreeCheck(BstHeadT, BstHeadS, BstHeadS) << endl;
+    */
+    
     return 0;
+}
+
+bool IsSubtreeCheck(const shared_ptr<BstType> CurrT, const shared_ptr<BstType> CurrS, const shared_ptr<BstType> &BstHeadS )
+{
+    bool a = false, b = false;
+    
+    if(nullptr == CurrT)
+        return (nullptr == CurrS ? true : false);
+    if(nullptr == CurrS)
+        return false;
+    
+    if(CurrS->key != CurrT->key)
+    {
+        a = IsSubtreeCheck(CurrT->left, BstHeadS, BstHeadS);
+        if(!a)
+            b = IsSubtreeCheck(CurrT->right, BstHeadS, BstHeadS);
+        return (a || b);
+    }
+    else
+    {
+        a = IsSubtreeCheck(CurrT->left, CurrS->left, BstHeadS);
+        b = IsSubtreeCheck(CurrT->right, CurrS->right, BstHeadS);
+        return (a && b);
+    }
+}
+
+pair<int,int> TreeLevelMinSum(const shared_ptr<BstType> Curr, int sum, int level)
+{
+    if(nullptr == Curr)
+        return(make_pair(INT_MAX, INT_MAX));
+    
+    sum += Curr->key;
+    ++level;
+    
+    if(nullptr == Curr->left && nullptr == Curr->right)
+        return(make_pair(sum, level));
+    
+    auto right = TreeLevelMinSum(Curr->right, sum, level);
+    auto left = TreeLevelMinSum(Curr->left, sum, level);
+    
+    return(right.first < left.first ? right : left);
+}
+
+void MergeSortedVecs(const vector<int> &A, const vector<int> &B, vector<int> &Op)
+{
+    int Aidx = 0, Bidx = 0, Opidx = 0;
+    if(0 == A.size())
+    {
+        Op = B;
+        return;
+    }
+    if(0 == B.size())
+    {
+        Op = A;
+        return;
+    }
+    Op.resize(A.size()+B.size(), 0);
+    while(Opidx < Op.size())
+    {
+        Op[Opidx++] = (A[Aidx] <= B[Bidx] ? A[Aidx++] : B[Bidx++]);
+        if(Aidx >= A.size() || Bidx >= B.size())
+            break;
+    }
+    while(Aidx < A.size())
+        Op[Opidx++] = A[Aidx++];
+    while(Bidx < B.size())
+        Op[Opidx++] = B[Bidx++];
+}
+
+void ReverseWord(string &word, int begin, int end)
+{
+    char temp;
+    while(begin < end)
+    {
+        temp = word[begin];
+        word[begin] = word[end];
+        word[end] = temp;
+        ++begin;
+        --end;
+    }
+}
+
+bool HopFunction(const int curridx, const vector<int> &HopInput, unordered_map<int,bool> &HopMemo)
+{
+    static int loopcnt = 0;
+    ++loopcnt;
+    cout << curridx << " " << loopcnt << endl;
+    
+    bool ret = false;
+    if(curridx >= HopInput.size())
+        return false;
+    if(HopInput.size()-1 == curridx)
+        return true;
+    if(0 == HopInput[curridx])
+        return false;
+    if(HopMemo.find(curridx) != HopMemo.end())
+        return HopMemo[curridx];
+    for(int i = 1; i <= HopInput[curridx]; ++i)
+    {
+        ret = HopFunction(curridx+i, HopInput, HopMemo);
+        if(ret)
+            break;
+    }
+    HopMemo.insert(make_pair(curridx, ret));
+    return ret;
 }
 
 void AllPermOfNumVec(vector<vector<int>> &AllPermVecOp, vector<int> DigitCnt, int level, vector<int> TempVecOp)
@@ -3571,6 +3938,13 @@ bool PairSortComp(pair<int,int> i, pair<int,int> j)
 {
     if(i.first == j.first)
         return (j.second < i.second);
+    return (i.first < j.first);
+}
+
+bool PairSortComp2(pair<int,int> i, pair<int,int> j)
+{
+    if(i.first == j.first)
+        return (i.second < j.second);
     return (i.first < j.first);
 }
 
