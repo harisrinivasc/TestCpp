@@ -447,6 +447,7 @@ void ReverseWord(string &word, int begin, int end);
 void MergeSortedVecs(const vector<int> &A, const vector<int> &B, vector<int> &Op);
 pair<int,int> TreeLevelMinSum(const shared_ptr<BstType> Curr, int sum, int level);
 bool IsSubtreeCheck(const shared_ptr<BstType> CurrT, const shared_ptr<BstType> CurrS, const shared_ptr<BstType> &BstHeadS );
+void GenerateGrayCode(const int num, const int Len, unordered_set<int> &GrayCodeSet);
 
 int main(int argc, const char * argv[])
 {
@@ -3431,7 +3432,77 @@ int main(int argc, const char * argv[])
     cout << IsSubtreeCheck(BstHeadT, BstHeadS, BstHeadS) << endl;
     */
     
+    /*
+    //DCP148 - generate gray code
+    const int GrayCodeLen = 4;
+    unordered_set<int> GrayCodeSet;
+    GrayCodeSet.insert(0);
+    GenerateGrayCode(0, GrayCodeLen, GrayCodeSet);
+    */
+    
+    /*
+    //DCP164 - You are given an array of length n + 1 whose elements belong to the set {1, 2, ..., n}. By the pigeonhole principle, there must be a duplicate. Find it in linear time and space.
+    const vector<int> PigeonHoleIn = {1,1,4,3,2,5};
+    int array_sum = 0, expected_sum = 0, n = PigeonHoleIn.size()-1;
+    for(const auto &i: PigeonHoleIn)
+        array_sum += i;
+    expected_sum = n*(n+1)/2;
+    cout << array_sum-expected_sum << endl;
+    */
+    
+    /*
+    //DCP185 - Given two rectangles on a 2D graph, return the area of their intersection. If the rectangles don't intersect, return 0.
+    //Given left bottom and top right indicies of each rectangle.
+    pair<int,int> Rec1LB = make_pair(1,1), Rec1TR = make_pair(4,3), Rec2LB = make_pair(1,1), Rec2TR = make_pair(5,3);
+    if(( Rec2LB.first >= Rec1TR.first ) ||
+       ( Rec2LB.second >= Rec1TR.second ))
+        cout << "0" << endl;
+    else
+    {
+        int x = abs( Rec2LB.first - Rec1TR.first);
+        int y = abs( Rec2LB.second - Rec1TR.second);
+        cout << "area " << x*y << endl;
+    }
+     */
+    
+    /*
+    //DCP184 - Given n numbers, find the greatest common denominator between them.
+    //For example, given the numbers [42, 56, 14], return 14.
+    vector<int> GcdIn = {42,57,14};
+    int p = GcdIn[0], q, r;
+    for(int i = 1; i < GcdIn.size(); ++i)
+    {
+        q = GcdIn[i];
+        while(0 != q)
+        {
+            r = p % q;
+            p = q;
+            q = r;
+        }
+    }
+    cout << "gcd: " << p << endl;
+    */
+    
     return 0;
+}
+
+void GenerateGrayCode(const int num, const int Len, unordered_set<int> &GrayCodeSet)
+{
+    static int Loopcnt = 0;
+    cout << "GenerateGrayCode: Loopcnt " << ++Loopcnt << " Num: " << num << endl;
+    
+    int mask, temp;
+    for(int i = 0; i < Len; ++i)
+    {
+        mask = 1 << i; //mask to flip 1 bit
+        temp = num ^ mask; //flip a bit
+        if(GrayCodeSet.find(temp) == GrayCodeSet.end())
+        {
+            //temp not present in set. Add to set and flip starting from 0th bit
+            GrayCodeSet.insert(temp);
+            GenerateGrayCode(temp, Len, GrayCodeSet);
+        }
+    }
 }
 
 bool IsSubtreeCheck(const shared_ptr<BstType> CurrT, const shared_ptr<BstType> CurrS, const shared_ptr<BstType> &BstHeadS )
