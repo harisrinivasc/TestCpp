@@ -448,6 +448,26 @@ void MergeSortedVecs(const vector<int> &A, const vector<int> &B, vector<int> &Op
 pair<int,int> TreeLevelMinSum(const shared_ptr<BstType> Curr, int sum, int level);
 bool IsSubtreeCheck(const shared_ptr<BstType> CurrT, const shared_ptr<BstType> CurrS, const shared_ptr<BstType> &BstHeadS );
 void GenerateGrayCode(const int num, const int Len, unordered_set<int> &GrayCodeSet);
+int MinSubsetFn(int Asum, int Bsum, int idx, const vector<int> &Input);
+int MinPalinPartCnt(const string &Input, unordered_map<string,int> &Memo, const int i, const int j);
+bool IsPalindrome(const string &Input, const int i, const int j);
+int LenLongestDistint(const vector<int> &Input);
+
+typedef struct
+{
+    int x;
+    int y;
+} RectCoordinateType;
+istream & operator >> (istream &in, RectCoordinateType &r)
+{
+    in >> r.x >> r.y;
+    return in;
+}
+ostream & operator << (ostream &out, const RectCoordinateType &r)
+{
+    out << "Xcoord " << r.x << " Ycoord " << r.y << endl;
+    return out;
+}
 
 int main(int argc, const char * argv[])
 {
@@ -3483,7 +3503,199 @@ int main(int argc, const char * argv[])
     cout << "gcd: " << p << endl;
     */
     
+    /*
+    //DCP186 - Given an array of positive integers, divide the array into two subsets such that the difference between the sum of the subsets is as small as possible.
+    //For example, given [5, 10, 15, 20, 25], return the sets {10, 25} and {5, 15, 20}, which has a difference of 5, which is the smallest possible difference.
+    vector<int> SubsetDiffIn = {5,4,3,2,1};
+    int TotalSum = 0;
+    for(const auto &i:SubsetDiffIn)
+        TotalSum += i;
+
+    cout << MinSubsetFn(TotalSum,0,SubsetDiffIn.size()-1,SubsetDiffIn) << endl;
+    */
+    
+    /*
+    //>> and << operator overloading
+    vector<RectCoordinateType> RectCoordIn;
+    RectCoordinateType Temp;
+    for(int i = 0; i < 2; ++i)
+    {
+        cout << "Enter x and y coordinate #" << i << endl;
+        cin >> Temp;
+        RectCoordIn.push_back(Temp);
+    }
+    for(const auto &i : RectCoordIn)
+        cout << i;
+    */
+    
+    /*
+    //DCP181 - Given a string, split it into as few strings as possible such that each string is a palindrome.
+    //For example, given the input string racecarannakayak, return ["racecar", "anna", "kayak"].
+    //Given the input string abc, return ["a", "b", "c"].
+    //Similar to matrix chain multiplication
+    const string PalinPartitionIn = "abcdcba";
+    unordered_map<string,int> PalinPartitionMemo;
+    cout << MinPalinPartCnt(PalinPartitionIn, PalinPartitionMemo, 0, PalinPartitionIn.size()-1) << endl;
+    */
+    
+    /*
+    //DCP189 - Given an array of elements, return the length of the longest subarray where all its elements are distinct.
+    //For example, given the array [5, 1, 3, 5, 2, 3, 4, 1], return 5 as the longest subarray of distinct elements is [5, 2, 3, 4, 1].
+    const vector<int> DistinctSubarray = {5, 1, 3, 5, 2, 3, 4, 4};
+    cout << LenLongestDistint(DistinctSubarray) << endl;
+    */
+    
     return 0;
+}
+
+int LenLongestDistint(const vector<int> &Input)
+{
+    int start_idx = 0, end_idx = 0;
+    int MaxDistLen = 0;
+    unordered_map<int,int> DistinctSet;
+    while(start_idx <= end_idx && start_idx < Input.size() && end_idx < Input.size())
+    {
+        auto Itr = DistinctSet.find(Input[end_idx]);
+        if(Itr == DistinctSet.end())
+        {
+            DistinctSet.insert(make_pair(Input[end_idx],end_idx));
+            ++end_idx;
+        }
+        else
+        {
+            MaxDistLen = max( MaxDistLen, static_cast<int>(DistinctSet.size()) );
+            
+            //Remove all elements upto and including the repeating element, and start the start_idx from the next idx after
+            // the 1st occurence of the repeating element
+            start_idx = Itr->second + 1;
+            vector<unordered_map<int,int>::iterator> EraseMapItrVec;
+            for(auto i = DistinctSet.begin(); i != DistinctSet.end(); ++i)
+            {
+                cout << i->second << " " << i->first << endl;
+                if(i->second < start_idx)
+                {
+                    cout << "erase " << i->second << " " << i->first << endl;
+                    EraseMapItrVec.push_back(i);
+                }
+            }
+            for(auto &i : EraseMapItrVec)
+                DistinctSet.erase(i);
+        }
+    }
+    
+    return MaxDistLen;
+}
+
+/*
+int LenLongestDistint(const vector<int> &Input, unordered_map<string,int> &Memo, const int i, const int j)
+{
+    if(i == j)
+        return 1;
+    if(i > j || i >= Input.size() || j >= Input.size())
+        return 0;
+ 
+    //Memoization
+    string MemoKey = to_string(i) + ":" + to_string(j);
+    if(Memo.find(MemoKey) != Memo.end())
+        return Memo[MemoKey];
+    
+    int MaxLen = INT_MIN, FirstPart = 0, SecondPart = 0;
+    static int LoopCnt = 0;
+    cout << "LoopCnt " << ++LoopCnt << " i " << i << " j " << j << endl;
+    
+    if(IsDistinct(Input,i,j))
+        MaxLen = j-i+1;
+    else
+    {
+        for(int k = i; k < j; ++k)
+        {
+            int FirstPart = LenLongestDistint(Input, Memo, i, k);
+            int SecondPart = LenLongestDistint(Input, Memo, k+1, j);
+            if(INT_MAX == FirstPart || INT_MAX == SecondPart)
+                continue;
+            else
+                MinPart = min(MinPart, FirstPart+SecondPart+1);
+        }
+    }
+    
+    Memo.insert(make_pair(MemoKey, MinPart));
+    return MinPart;
+}
+
+bool IsDistinct(const vector<int> &Input, const int i, const int j)
+{
+    if(i > j || i >= Input.size() || j >= Input.size())
+        return false;
+    if(i == j)
+        return true;
+    unordered_set<int> DistinctSet;
+    for(int k = i; i <= j; ++k)
+        if(DistinctSet.find(Input[k]) == DistinctSet.end())
+            DistinctSet.insert(Input[k]);
+        else
+            return false;
+    return true;
+}
+*/
+
+int MinPalinPartCnt(const string &Input, unordered_map<string,int> &Memo, const int i, const int j)
+{
+    if(i == j)
+        return 0;
+    if(i > j || i >= Input.size() || j >= Input.size())
+        return INT_MAX;
+    
+    //Memoization
+    string MemoKey = to_string(i) + ":" + to_string(j);
+    if(Memo.find(MemoKey) != Memo.end())
+        return Memo[MemoKey];
+    
+    int MinPart = INT_MAX, FirstPart = 0, SecondPart = 0;
+    static int LoopCnt = 0;
+    cout << "LoopCnt " << ++LoopCnt << " i " << i << " j " << j << endl;
+    
+    if(IsPalindrome(Input,i,j))
+        MinPart = 0;
+    else
+    {
+        for(int k = i; k < j; ++k)
+        {
+            int FirstPart = MinPalinPartCnt(Input, Memo, i, k);
+            int SecondPart = MinPalinPartCnt(Input, Memo, k+1, j);
+            if(INT_MAX == FirstPart || INT_MAX == SecondPart)
+                continue;
+            else
+                MinPart = min(MinPart, FirstPart+SecondPart+1);
+        }
+    }
+    
+    Memo.insert(make_pair(MemoKey, MinPart));
+    return MinPart;
+}
+
+bool IsPalindrome(const string &Input, const int i, const int j)
+{
+    if(i > j || i >= Input.size() || j >= Input.size())
+        return false;
+    if(i == j)
+        return true;
+    for(int k = 0; k <= (j-i)/2; ++k)
+        if(Input[k+i] != Input[j-k])
+            return false;
+    return true;
+}
+
+int MinSubsetFn(const int TotalSum, const int SubarraySum, int idx, const vector<int> &Input)
+{
+    static int LoopCnt = 0;
+    
+    if(idx < 0)
+        return abs(TotalSum-SubarraySum-SubarraySum);
+    
+    cout << " SubarraySum " << SubarraySum << " idx " << idx << " LoopCtr " << ++LoopCnt << endl;
+    
+    return(min( MinSubsetFn(TotalSum, SubarraySum+Input[idx], idx-1, Input),
+               MinSubsetFn(TotalSum, SubarraySum, idx-1, Input) ));
 }
 
 void GenerateGrayCode(const int num, const int Len, unordered_set<int> &GrayCodeSet)
