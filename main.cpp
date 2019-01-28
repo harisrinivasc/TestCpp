@@ -452,6 +452,7 @@ int MinSubsetFn(int Asum, int Bsum, int idx, const vector<int> &Input);
 int MinPalinPartCnt(const string &Input, unordered_map<string,int> &Memo, const int i, const int j);
 bool IsPalindrome(const string &Input, const int i, const int j);
 int LenLongestDistint(const vector<int> &Input);
+int NumSqInts(const int SqSumNum, const vector<int> &NumArray, int NumInts, int MaxIdx);
 
 typedef struct
 {
@@ -2577,6 +2578,7 @@ int main(int argc, const char * argv[])
     
     /*
     //Rotate NxN matrix to the right by 90deg
+    //DCP168 - Given an N by N matrix, rotate it by 90 degrees clockwise.
     const int MatRotSize = 5;
     vector<vector<int>> MatRot;
     for(auto i = 0; i < MatRotSize*MatRotSize; ++i)
@@ -2732,6 +2734,8 @@ int main(int argc, const char * argv[])
     */
     
     /*
+    //DCP158 - You are given an N by M matrix of 0s and 1s. Starting from the top left corner, how many ways are there to reach the bottom right corner?
+    //You can only move right and down. 0 represents an empty space while 1 represents a wall you cannot walk through.
     //Num of paths from 1 corner to another - iterative
     //1 - path, 0 - no path. Can traverse only down or right
     //Find num paths from top left (0,0) to bottom right (M-1,N-1)
@@ -3545,7 +3549,114 @@ int main(int argc, const char * argv[])
     cout << LenLongestDistint(DistinctSubarray) << endl;
     */
     
+    /*
+    //DCP154 - Implement a stack API using only a heap. A stack implements the following methods:
+    //push(item), which adds an element to the stack
+    //pop(), which removes and returns the most recently added element (or throws an error if there is nothing on the stack)
+    //Recall that a heap has the following operations:
+    //push(item), which adds a new key to the heap
+    //pop(), which removes and returns the max value of the heap
+    typedef pair<int,int> MyPair;
+    class MyStackHeapComp
+    {
+    public:
+        bool operator()(const MyPair &A, const MyPair &B)
+        {
+            return (A.first < B.first);
+        }
+    };
+    
+    class MyStack
+    {
+    private:
+        priority_queue<MyPair, vector<MyPair>, MyStackHeapComp> MyHeap;
+        //priority_queue<MyPair, vector<MyPair>, less<MyPair>> MyHeap;
+        //priority_queue<MyPair> MyHeap;
+    public:
+        void push(const int a)
+        {
+            int CurrSize = MyHeap.size();
+            MyHeap.push(make_pair(CurrSize,a));
+        }
+        void pop()
+        {
+            MyHeap.pop();
+        }
+        int top()
+        {
+            return MyHeap.top().second;
+        }
+    };
+    MyStack temp_stack;
+    temp_stack.push(2);
+    temp_stack.push(3);
+    temp_stack.push(0);
+    temp_stack.pop();
+    cout << temp_stack.top() << endl;
+    */
+    
+    /*
+    //DCP156 - Given a positive integer n, find the smallest number of squared integers which sum to n.
+    //For example, given n = 13, return 2 since 13 = 3^2 + 2^2 = 9 + 4.
+    //Given n = 27, return 3 since 27 = 3^2 + 3^2 + 3^2 = 9 + 9 + 9.
+    const int SqSumNum = 3;
+    vector<int> NumArray;
+    for(int i = 1; i <= sqrt(SqSumNum); ++i)
+        NumArray.push_back(i);
+    
+    cout << NumSqInts(SqSumNum, NumArray, 0, NumArray.size()-1) << endl;
+     */
+    
+    /*
+    //DCP161 - Given a 32-bit integer, return the number with its bits reversed.
+    //For example, given the binary number 1111 0000 1111 0000 1111 0000 1111 0000, return 0000 1111 0000 1111 0000 1111 0000 1111.
+    const unsigned int RevIn = INT_MAX;
+    unsigned int RevOp = 0, InMask, OpMask;
+    for(int i = 0; i < sizeof(unsigned int)*8; ++i)
+    {
+        InMask = 1 << i;
+        if(RevIn & InMask)
+        {
+            OpMask = 1 << (sizeof(unsigned int)*8 - i - 1);
+            RevOp |= OpMask;
+        }
+    }
+    cout << RevIn << " " << RevOp << endl;
+     */
+    
     return 0;
+}
+
+int NumSqInts(const int SqSumNum, const vector<int> &NumArray, int NumInts, int MaxIdx)
+{
+    if(SqSumNum == 0)
+        return NumInts;
+    if(SqSumNum < 0 || MaxIdx < 0)
+        return INT_MAX;
+    
+    //Memoization
+    static unordered_map<string,int> Memo;
+    string MemoKey = to_string(SqSumNum) + ":" + to_string(MaxIdx);
+    if(Memo.find(MemoKey) != Memo.end())
+        return Memo[MemoKey];
+
+    static int LoopCtr = 0;
+    cout << "LoopCtr " << ++LoopCtr << " Sum " << SqSumNum << " MaxIdx " << MaxIdx << endl;
+    
+    int Ret = INT_MAX, temp;
+    for(int i = MaxIdx; i >= 0 ; --i)
+    {
+        if(SqSumNum < NumArray[i]*NumArray[i])
+            temp = NumSqInts(SqSumNum, NumArray, NumInts, i-1);
+        else
+            temp = min( NumSqInts(SqSumNum-(NumArray[i]*NumArray[i]), NumArray, NumInts+1, MaxIdx),
+                       NumSqInts(SqSumNum, NumArray, NumInts, MaxIdx-1) );
+        Ret = min(Ret, temp);
+    }
+    
+    Memo.insert(make_pair(MemoKey, Ret));
+    
+    return Ret;
 }
 
 int LenLongestDistint(const vector<int> &Input)
@@ -3585,58 +3696,6 @@ int LenLongestDistint(const vector<int> &Input)
     
     return MaxDistLen;
 }
-
-/*
-int LenLongestDistint(const vector<int> &Input, unordered_map<string,int> &Memo, const int i, const int j)
-{
-    if(i == j)
-        return 1;
-    if(i > j || i >= Input.size() || j >= Input.size())
-        return 0;
- 
-    //Memoization
-    string MemoKey = to_string(i) + ":" + to_string(j);
-    if(Memo.find(MemoKey) != Memo.end())
-        return Memo[MemoKey];
-    
-    int MaxLen = INT_MIN, FirstPart = 0, SecondPart = 0;
-    static int LoopCnt = 0;
-    cout << "LoopCnt " << ++LoopCnt << " i " << i << " j " << j << endl;
-    
-    if(IsDistinct(Input,i,j))
-        MaxLen = j-i+1;
-    else
-    {
-        for(int k = i; k < j; ++k)
-        {
-            int FirstPart = LenLongestDistint(Input, Memo, i, k);
-            int SecondPart = LenLongestDistint(Input, Memo, k+1, j);
-            if(INT_MAX == FirstPart || INT_MAX == SecondPart)
-                continue;
-            else
-                MinPart = min(MinPart, FirstPart+SecondPart+1);
-        }
-    }
-    
-    Memo.insert(make_pair(MemoKey, MinPart));
-    return MinPart;
-}
-
-bool IsDistinct(const vector<int> &Input, const int i, const int j)
-{
-    if(i > j || i >= Input.size() || j >= Input.size())
-        return false;
-    if(i == j)
-        return true;
-    unordered_set<int> DistinctSet;
-    for(int k = i; i <= j; ++k)
-        if(DistinctSet.find(Input[k]) == DistinctSet.end())
-            DistinctSet.insert(Input[k]);
-        else
-            return false;
-    return true;
-}
-*/
 
 int MinPalinPartCnt(const string &Input, unordered_map<string,int> &Memo, const int i, const int j)
 {
