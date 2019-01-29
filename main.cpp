@@ -453,6 +453,7 @@ int MinPalinPartCnt(const string &Input, unordered_map<string,int> &Memo, const 
 bool IsPalindrome(const string &Input, const int i, const int j);
 int LenLongestDistint(const vector<int> &Input);
 int NumSqInts(const int SqSumNum, const vector<int> &NumArray, int NumInts, int MaxIdx);
+int MaxSumSubarray(const vector<int> &Input, const int start, const int end);
 
 typedef struct
 {
@@ -2695,7 +2696,7 @@ int main(int argc, const char * argv[])
     */
     
     /*
-    //Find maximum value of contiguous subarray
+    //Find maximum sum of contiguous subarray
     const vector<int> MaxSubarrayIn = {1,-3,4,-1,2,1};
     int MaxVal = 0, temp;
     for(auto i = 0; i < MaxSubarrayIn.size(); ++i)
@@ -2704,16 +2705,20 @@ int main(int argc, const char * argv[])
      */
     
     /*
-    //Find maximum value of contiguous subarray
-    const vector<int> MaxSubarrayIn = {1,-3,4,-1,2,1};
-    int MaxHere, MaxSoFar;
-    MaxHere = MaxSoFar = MaxSubarrayIn[0];
-    for(int i = 1; i < MaxSubarrayIn.size(); ++i)
+    //DCP190 - Find maximum sum of contiguous subarray of a circular array
+    //For example, given [8, -1, 3, 4], return 15 as we choose the numbers 3, 4, and 8 where the 8 is obtained from wrapping around.
+    //Given [-4, 5, 1, 0], return 6 as we choose the numbers 5 and 1.
+    vector<int> MaxSubarrayIn = {1,-3,4,-1,2,1};
+    int MaxSumNoWrap = MaxSumSubarray(MaxSubarrayIn, 0, MaxSubarrayIn.size()-1);
+    //To find sum of array with wraparound, compute sum and subtract MaxSum of negative subarray
+    int TotalSum = 0;
+    for(int i = 0; i < MaxSubarrayIn.size(); ++i)
     {
-        MaxHere = max(MaxHere + MaxSubarrayIn[i], MaxSubarrayIn[i]);
-        MaxSoFar = max(MaxSoFar, MaxHere);
+        TotalSum += MaxSubarrayIn[i];
+        MaxSubarrayIn[i] = -MaxSubarrayIn[i];
     }
-    cout << MaxSoFar << endl;
+    int MaxSumNegArray = MaxSumSubarray(MaxSubarrayIn, 0, MaxSubarrayIn.size()-1);
+    cout << max(MaxSumNoWrap, TotalSum-(-MaxSumNegArray)) << endl;
     */
     
     /*
@@ -3624,7 +3629,50 @@ int main(int argc, const char * argv[])
     cout << RevIn << " " << RevOp << endl;
      */
     
+    /*
+    //DCP165 - Given an array of integers, return a new array where each element in the new array is the number of smaller elements to the right of that element in the original input array.
+    //For example, given the array [3, 4, 9, 6, 1], return [1, 1, 2, 1, 0]
+    const vector<int> SmallElemRightIn = {3, 4, 9, 6, 1};
+    vector<int> NumElemOp (SmallElemRightIn.size(), 0);
+    set<int> SmallElemSet;
+    for(int i = SmallElemRightIn.size()-1; i >= 0; --i)
+    {
+        //Add element from the right to set (balanced binary search tree usin AVL)
+        SmallElemSet.insert(SmallElemRightIn[i]);
+        
+        //find the index of the element in the BST
+        auto itr = SmallElemSet.lower_bound(SmallElemRightIn[i]);
+        
+        //find the distance of this element from the start of the BST and store in output array
+        NumElemOp[i] = distance(SmallElemSet.begin(), itr);
+    }
+    */
+    
     return 0;
+}
+
+int MaxSumSubarray(const vector<int> &Input, const int start, const int end)
+{
+    if(start < 0 || end < 0 || start >= Input.size() || end >= Input.size())
+        return INT_MIN;
+    if(start == end)
+        return Input[start];
+    
+    int MaxHere, MaxSoFar;
+    MaxHere = MaxSoFar = Input[start];
+    int i = start + 1;
+    
+    while(1)
+    {
+        MaxHere = max(MaxHere + Input[i], Input[i]);
+        MaxSoFar = max(MaxSoFar, MaxHere);
+        if(i == end)
+            break;
+        ++i;
+        i %= Input.size();
+    }
+    
+    return MaxSoFar;
 }
 
 int NumSqInts(const int SqSumNum, const vector<int> &NumArray, int NumInts, int MaxIdx)
