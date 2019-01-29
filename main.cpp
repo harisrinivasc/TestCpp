@@ -3648,6 +3648,36 @@ int main(int argc, const char * argv[])
     }
     */
     
+    /*
+    //DCP180 - Given a stack of N elements, interleave the first half of the stack with the second half reversed using only one other queue. This should be done in-place.
+    //Recall that you can only push or pop from a stack, and enqueue or dequeue from a queue.
+    //For example, if the stack is [1, 2, 3, 4, 5], it should become [1, 5, 2, 4, 3]. If the stack is [1, 2, 3, 4], it should become [1, 4, 2, 3].
+    const vector<int> InNum = {1, 2, 3, 4};
+    stack<int> InterStack;
+    for(const auto &i : InNum)
+        InterStack.push(i);
+    queue<int> InterQ;
+    int startidx = 1, i;
+    
+    while(startidx < InNum.size())
+    {
+        i = startidx;
+        while(i < InNum.size())
+        {
+            InterQ.push(InterStack.top());
+            InterStack.pop();
+            ++i;
+        }
+        while(!InterQ.empty())
+        {
+            InterStack.push(InterQ.front());
+            InterQ.pop();
+        }
+        ++startidx;
+    }
+    */
+    
+    
     return 0;
 }
 
