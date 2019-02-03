@@ -418,8 +418,8 @@ bool IsSplitArraySumPossible(const vector<int> &A, const int idx, const bool IsB
 long int CustomPower(const int x, const int y);
 int MaxProduct(const vector<int> &A, const int idx, const int cnt);
 void LogBishopPath(vector<vector<int>> &Temp, const int R, const int C, const int N);
-bool PairSortComp(pair<int,int> i, pair<int,int> j);
-bool PairSortComp2(pair<int,int> i, pair<int,int> j);
+bool PairSortComp(const pair<int,int> i, const pair<int,int> j);
+bool PairSortComp2(const pair<int,int> i, const pair<int,int> j);
 void IslandsBfs(const int row, const int col, vector<vector<bool>> &Visited, const vector<vector<int>> &IslandsInput);
 int LargestNonAdjSum(const vector<int> &InputVec, const int idx, unordered_map<int,int> &Memo);
 void AddElemMedian(const int i, priority_queue<int, vector<int>, greater<int>> &MinHeap, priority_queue<int> &MaxHeap);
@@ -454,6 +454,13 @@ bool IsPalindrome(const string &Input, const int i, const int j);
 int LenLongestDistint(const vector<int> &Input);
 int NumSqInts(const int SqSumNum, const vector<int> &NumArray, int NumInts, int MaxIdx);
 int MaxSumSubarray(const vector<int> &Input, const int start, const int end);
+bool IsArrayEnd(const vector<int> &Input, const int curridx, unordered_map<int, bool> &Memo);
+int ComputeInversions(const vector<pair<int,int>> &LineSegments);
+int MergeSortInvCnt(vector<int> &Input, vector<int> &TempMerge, const int LeftStart, const int RightEnd);
+int MergeSortInvCntCombine(vector<int> &Input, vector<int> &TempMerge, const int LeftStart, const int RightEnd);
+int FindIdxSortedArray(const vector<vector<int>> &Input, const int FindNum, const int row, const int left, const int right);
+int KthSmallest2d(const vector<vector<int>> &arr, const int k);
+int SumOfNodesRepetitions(const shared_ptr<BstType> Curr, unordered_map<int, int> &SumCntMap);
 
 typedef struct
 {
@@ -1230,27 +1237,27 @@ int main(int argc, const char * argv[])
      
      while (getline(inputf,input_line))
      {
-     ++linenum;
-     wordnum = 0;
-     istringstream inputs_stream(input_line);
-     while(inputs_stream >> input_word)
-     {
-         ++wordnum;
-         WriteToQueue(WordQ, input_word);
-         //trim input word to remove non-alphanumberic characters
-         auto non_alnum = input_word.find_first_of(",.:;");
-         if( string::npos != non_alnum )
-            input_word.resize(non_alnum);
-         if( search_word.end() != search_word.find(input_word) )
+         ++linenum;
+         wordnum = 0;
+         istringstream inputs_stream(input_line);
+         while(inputs_stream >> input_word)
          {
-            ++searchcnt;
-            outputf << "  line(" << linenum << ") " << "word(" << wordnum << ") ";
-            while(!WordQ.empty())
-            {
-                outputf << WordQ.front() << " ";
-            WordQ.pop();
-            }
-            outputf << endl;
+             ++wordnum;
+             WriteToQueue(WordQ, input_word);
+             //trim input word to remove non-alphanumberic characters
+             auto non_alnum = input_word.find_first_of(",.:;");
+             if( string::npos != non_alnum )
+                input_word.resize(non_alnum);
+             if( search_word.end() != search_word.find(input_word) )
+             {
+                ++searchcnt;
+                outputf << "  line(" << linenum << ") " << "word(" << wordnum << ") ";
+                while(!WordQ.empty())
+                {
+                    outputf << WordQ.front() << " ";
+                    WordQ.pop();
+                }
+                outputf << endl;
             }
          }
      }
@@ -3677,8 +3684,305 @@ int main(int argc, const char * argv[])
     }
     */
     
+    /*
+    //DCP192 - You are given an array of nonnegative integers. Let's say you start at the beginning of the array and are trying to advance to the end. You can advance at most, the number of steps that you're currently on. Determine whether you can get to the end of the array.
+    //For example, given the array [1, 3, 1, 2, 0, 1], we can go from indices 0 -> 1 -> 3 -> 5, so return true.
+    //Given the array [1, 2, 1, 0, 0], we can't reach the end, so return false.
+    const vector<int> EndArrayIn = {1, 3, 1, 1, 0, 1};
+    unordered_map<int, bool> Memo;
+    cout << IsArrayEnd(EndArrayIn, 0, Memo) << endl;
+    */
+    
+    /*
+    //Maximum difference between elements in an array
+    const vector<int> MaxDiffInput = {2, 3, 10, 6, -4, 8, 1};
+    int MinElem = MaxDiffInput[0], MaxDiff = MaxDiffInput[1] - MaxDiffInput[0];
+    for(int i = 1; i < MaxDiffInput.size(); ++i)
+    {
+        MaxDiff = max(MaxDiff, MaxDiffInput[i]-MinElem);
+        MinElem = min(MinElem, MaxDiffInput[i]);
+    }
+    cout << MaxDiff << " " << MinElem << endl;
+    */
+    
+    /*
+    //DCP193 - Given a array of numbers representing the stock prices of a company in chronological order, write a function that calculates the maximum profit you could have made from buying and selling that stock. You're also given a number fee that represents a transaction fee for each buy and sell transaction.
+    //You must buy before you can sell the stock, but you can make as many transactions as you like.
+    //For example, given [1, 3, 2, 8, 4, 10] and fee = 2, you should return 9, since you could buy the stock at 1 dollar, and sell at 8 dollars, and then buy it at 4 dollars and sell it at 10 dollars. Since we did two transactions, there is a 4 dollar fee, so we have 7 + 6 = 13 profit minus 4 dollars of fees.
+    const vector<int> StockPrices = {1, 3, 2, 8, 4, 10};
+    const int Fee = 2;
+    int CashInHand = -StockPrices[0];
+    int Profit = 0;
+    for(int i = 1; i < StockPrices.size(); ++i)
+    {
+        Profit = max(Profit, StockPrices[i]+CashInHand-Fee);
+        CashInHand = max(CashInHand, Profit-StockPrices[i]);
+    }
+    cout << Profit << endl;
+    */
+    
+    /*
+    //Given an array of stock prices, determine the maximum profit by buying and selling stock. Similar to DCP193 but without
+    //transaction fee
+    const vector<int> StockPrices = {10, 22, 5, 75, 65, 80};//{1, 3, 2, 8, 4, 10};
+    vector<pair<int,int>> BuySell;
+    int idx = 0, buy, sell;
+    while (idx < StockPrices.size())
+    {
+        //Find local minima
+        while( (StockPrices[idx+1] <= StockPrices[idx]) && (idx < StockPrices.size()-1) )
+            ++idx;
+        if(idx == StockPrices.size()-1)
+            break;
+        buy = idx++;
+        
+        //Find local maxima
+        while( (StockPrices[idx] >= StockPrices[idx-1]) && (idx < StockPrices.size()) )
+            ++idx;
+        sell = idx-1;
+        
+        BuySell.push_back(make_pair(buy, sell));
+    }
+    */
+    
+    //Maximize profit by buying/selling atmost 'k' times
+    //const int Ktimes = 2;
+
+    /*
+    //DCP194 - Suppose you are given two lists of n points, one list p1, p2, ..., pn on the line y = 0 and the other list q1, q2, ..., qn on the line y = 1. Imagine a set of n line segments connecting each point pi to qi. Write an algorithm to determine how many pairs of the line segments intersect.
+    //pair.first indicates 'q' points on the line y = 1, pair.second indicates 'p' points on line y = 0
+    vector<pair<int,int>> LineSegments {{make_pair(4,5)}, {make_pair(7,8)}, {make_pair(3,3)}, {make_pair(6,2)}, {make_pair(2,1)},
+        {make_pair(1,7)}, {make_pair(4,7)}, {make_pair(10,12)}};
+    
+    //Sort based on y = 1 line
+    sort(LineSegments.begin(), LineSegments.end(), PairSortComp);
+    
+    //Compute total number of inversions in the 'pair.second' elements using MergeSort. Total number of inversions indicate the total
+    //number of intersections in the ling segment
+    cout << ComputeInversions(LineSegments) << endl;
+    */
+    
+    /*
+    //DCP195 - Let A be an N by M matrix in which every row and every column is sorted.
+    //Given i1, j1, i2, and j2, compute the number of elements of M smaller than M[i1, j1] and larger than M[i2, j2].
+    const vector<vector<int>> Matrix2dIn = {{1, 3, 7, 10, 15, 20},
+                                            {2, 6, 9, 14, 22, 25},
+                                            {3, 8, 10, 15, 25, 30},
+                                            {10, 11, 12, 23, 30, 35},
+                                            {20, 25, 30, 35, 40, 45}};
+    const pair<int,int> LessThan = make_pair(1,1), GreaterThan = make_pair(3,3);
+    int TotalCnt = 0;
+    
+    //Cnt total elements less than given number
+    for(int row = 0; row < Matrix2dIn.size(); ++row)
+    {
+        if(row >= LessThan.first)
+            TotalCnt += (FindIdxSortedArray(Matrix2dIn, Matrix2dIn[LessThan.first][LessThan.second], row, 0, LessThan.second));
+        else
+            TotalCnt += (FindIdxSortedArray(Matrix2dIn, Matrix2dIn[LessThan.first][LessThan.second], row, LessThan.second, Matrix2dIn[row].size()-1));
+    }
+    
+    //Cnt total elements greater than given number
+    for(int row = 0; row < Matrix2dIn.size(); ++row)
+    {
+        if(row <= GreaterThan.first)
+            TotalCnt += (Matrix2dIn[row].size() - FindIdxSortedArray(Matrix2dIn, Matrix2dIn[GreaterThan.first][GreaterThan.second], row, GreaterThan.second, Matrix2dIn[row].size()-1));
+        else
+            TotalCnt += (Matrix2dIn[row].size() - FindIdxSortedArray(Matrix2dIn, Matrix2dIn[GreaterThan.first][GreaterThan.second], row, 0, GreaterThan.second));
+    }
+
+    cout << TotalCnt << endl;
+    */
+    
+    /*
+    //compute kth smallest element in a sorted 2D array
+    const vector<vector<int>> Matrix2dIn = {{1, 3, 4, 5, 15, 20},
+                                            {2, 6, 9, 14, 22, 25},
+                                            {3, 8, 10, 15, 25, 30},
+                                            {10, 11, 12, 23, 30, 35},
+                                            {20, 25, 30, 35, 40, 45}};
+    cout << KthSmallest2d(Matrix2dIn, 2) << endl;
+    */
+    
+    /*
+    //DCP196 - Given the root of a binary tree, find the most frequent subtree sum. The subtree sum of a node is the sum of all values under a node, including the node itself.
+    const vector<int> SumTree = {5,5,5,5,5,5,5};
+    for(const auto &i : SumTree)
+        InsertKeyToAnyTree(i, " ");
+    PrintBst();
+    unordered_map<int, int> SumCntMap;
+    (void)SumOfNodesRepetitions(BstHead, SumCntMap);
+    
+    int MaxSum = 0, MaxSumCnt = 0;
+    for(auto i = SumCntMap.cbegin(); i != SumCntMap.cend(); ++i)
+    {
+        if(MaxSumCnt < i->second)
+        {
+            MaxSumCnt = i->second;
+            MaxSum = i->first;
+        }
+    }
+    cout << MaxSum << " " << MaxSumCnt << endl;
+     */
     
     return 0;
+}
+
+int SumOfNodesRepetitions(const shared_ptr<BstType> Curr, unordered_map<int, int> &SumCntMap)
+{
+    if(nullptr == Curr)
+        return 0;
+    int Sum = SumOfNodesRepetitions(Curr->left, SumCntMap) + SumOfNodesRepetitions(Curr->right, SumCntMap) + Curr->key;
+    SumCntMap[Sum]++;
+    return(Sum);
+}
+
+typedef pair<int,pair<int, int>> KTH_SMALL_TYPE;
+struct CompareKthSmall
+{
+    bool operator()(const KTH_SMALL_TYPE &a, const KTH_SMALL_TYPE &b)
+    {
+        return a.first > b.first;
+    }
+};
+
+int KthSmallest2d(const vector<vector<int>> &arr, const int k)
+{
+    int M = arr.size(), N = arr[0].size();
+    
+    //priority_queue<KTH_SMALL_TYPE, vector<KTH_SMALL_TYPE>, CompareKthSmall> pq;
+    priority_queue<KTH_SMALL_TYPE, vector<KTH_SMALL_TYPE>, greater<KTH_SMALL_TYPE>> pq;
+    
+    //add 1st column in pq
+    for(int i = 0; i < M; i++)
+        pq.push( make_pair(arr[i][0], make_pair(i,0)) );
+    
+    int x = k, ans = 0;
+    while(x--)
+    {
+        int e = pq.top().first;
+        int i = pq.top().second.first;
+        int j = pq.top().second.second;
+        ans = e;
+        pq.pop();
+        if(j < N-1)
+            pq.push( make_pair( arr[i][j+1], make_pair(i,j+1) ) );
+    }
+    return ans;
+}
+
+int FindIdxSortedArray(const vector<vector<int>> &Input, const int FindNum, const int row, const int left, const int right)
+{
+    if(FindNum <= Input[row][left])
+        return left;
+    if(FindNum > Input[row][right])
+        return right+1;
+    if(left >= right)
+        return right;
+    
+    int middle = (left + right)/2;
+    
+    if(FindNum == Input[row][middle])
+       return middle;
+    else if(FindNum > Input[row][middle])
+        return FindIdxSortedArray(Input, FindNum, row, middle+1, right);
+    else
+        return FindIdxSortedArray(Input, FindNum, row, left, middle-1);
+}
+
+int ComputeInversions(const vector<pair<int,int>> &LineSegments)
+{
+    vector<int> TempMerge (LineSegments.size(), 0), MergetInput;
+    for(const auto &i : LineSegments)
+        MergetInput.push_back(i.second);
+    return MergeSortInvCnt(MergetInput, TempMerge, 0, LineSegments.size()-1);
+}
+
+int MergeSortInvCnt(vector<int> &Input, vector<int> &TempMerge, const int LeftStart, const int RightEnd)
+{
+    if(LeftStart >= RightEnd)
+        return 0;
+    
+    int Ret = 0, Middle = (RightEnd+LeftStart)/2;
+    Ret += MergeSortInvCnt(Input, TempMerge, LeftStart, Middle);
+    Ret += MergeSortInvCnt(Input, TempMerge, Middle+1, RightEnd);
+    Ret += MergeSortInvCntCombine(Input, TempMerge, LeftStart, RightEnd);
+    return Ret;
+}
+
+int MergeSortInvCntCombine(vector<int> &Input, vector<int> &TempMerge, const int LeftStart, const int RightEnd)
+{
+    if(LeftStart >= RightEnd)
+        return 0;
+    
+    int LeftEnd = (RightEnd+LeftStart)/2;
+    int RightStart = LeftEnd+1;
+    int leftidx = LeftStart, rightidx = RightStart, combine_idx = LeftStart;
+    int TotalInv = 0;
+    
+    //combine left and right arrays
+    while(leftidx <= LeftEnd && rightidx <= RightEnd)
+    {
+        if(Input[leftidx] <= Input[rightidx])
+        {
+            TempMerge[combine_idx] = Input[leftidx];
+            ++leftidx;
+        }
+        else
+        {
+            TempMerge[combine_idx] = Input[rightidx];
+            ++rightidx;
+            TotalInv += (LeftEnd - leftidx + 1);
+        }
+        ++combine_idx;
+    }
+    
+    //append any leftover rightarray elements
+    while(rightidx <= RightEnd)
+    {
+        TempMerge[combine_idx] = Input[rightidx];
+        ++rightidx;
+        ++combine_idx;
+    }
+    
+    //append any leftover leftarray elements and add inversions
+    while(leftidx <= LeftEnd)
+    {
+        TempMerge[combine_idx] = Input[leftidx];
+        ++leftidx;
+        ++combine_idx;
+        //TotalInv += (RightEnd - RightStart + 1);
+    }
+    
+    //copy merged output
+    for(int i = LeftStart; i <= RightEnd; ++i)
+        Input[i] = TempMerge[i];
+    
+    return TotalInv;
+}
+
+bool IsArrayEnd(const vector<int> &Input, const int curridx, unordered_map<int, bool> &Memo)
+{
+    if(curridx < 0 || curridx >= Input.size())
+        return false;
+    if(curridx == Input.size()-1)
+        return true;
+    if(0 == Input[curridx])
+        return false;
+    
+    bool Ret = false;
+    for(int i = 1; i <= Input[curridx]; ++i)
+    {
+        if(Memo.find(curridx) != Memo.end())
+            return Memo[curridx];
+        if(IsArrayEnd(Input, curridx+i, Memo))
+        {
+            Ret = true;
+            break;
+        }
+    }
+    Memo.insert(make_pair(curridx, Ret));
+    return Ret;
 }
 
 int MaxSumSubarray(const vector<int> &Input, const int start, const int end)
@@ -4169,7 +4473,7 @@ void InsertKeyToAnyTree(const int key, const string value)
     
     cout << "Insert non-BST complete: Key: " << key << " Value: " << value << endl;
 }
-#endif
+#endif //#if 0
 
 //Insert key to non-binary search tree
 void InsertKeyToAnyTree(const int key, const string value)
@@ -4354,14 +4658,14 @@ void IslandsBfs(const int row, const int col, vector<vector<bool>> &Visited, con
     }
 }
     
-bool PairSortComp(pair<int,int> i, pair<int,int> j)
+bool PairSortComp(const pair<int,int> i, const pair<int,int> j)
 {
     if(i.first == j.first)
         return (j.second < i.second);
     return (i.first < j.first);
 }
 
-bool PairSortComp2(pair<int,int> i, pair<int,int> j)
+bool PairSortComp2(const pair<int,int> i, const pair<int,int> j)
 {
     if(i.first == j.first)
         return (i.second < j.second);
