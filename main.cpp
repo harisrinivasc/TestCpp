@@ -3978,6 +3978,53 @@ int main(int argc, const char * argv[])
         Ppoints.push_back(MinMaxPoints.first);
     */
     
+    /*
+    //DCP199 - Given a string of parentheses, find the balanced string that can be produced from it using the minimum number of insertions and deletions. If there are multiple solutions, return any of them.
+    //For example, given "(()", you could return "(())". Given "))()(", you could return "()()()()"
+    //Similar to DCP86
+    const string BraceIn = "(()";//)(((()))())(";
+    stack<pair<char,int>> TempBraceStack;
+    
+    for(int i = 0; i < BraceIn.size(); ++i)
+    {
+        if(BraceIn[i] == '(')
+            TempBraceStack.push(make_pair(BraceIn[i],i));
+        else if(BraceIn[i] == ')')
+        {
+            if( !TempBraceStack.empty() && TempBraceStack.top().first == '(' )
+                TempBraceStack.pop();
+            else
+                TempBraceStack.push(make_pair(BraceIn[i],i));
+        }
+    }
+    
+    stack<char> OutputBraceStack;
+    int idx = BraceIn.size()-1;
+    while(idx >= 0)
+    {
+        if(!TempBraceStack.empty())
+            if(TempBraceStack.top().second == idx)
+            {
+                //push closing brace first before opening brace
+                OutputBraceStack.push(')');
+                OutputBraceStack.push('(');
+                TempBraceStack.pop();
+                --idx;
+                continue;
+            }
+        OutputBraceStack.push(BraceIn[idx--]);
+    }
+    
+    string BraceOutput (OutputBraceStack.size(), ' ');
+    idx = 0;
+    while(idx < BraceOutput.size() && !OutputBraceStack.empty())
+    {
+        BraceOutput[idx++] = OutputBraceStack.top();
+        OutputBraceStack.pop();
+    }
+    cout << BraceOutput << endl;
+    */
+    
     return 0;
 }
 
