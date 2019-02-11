@@ -461,6 +461,13 @@ int MergeSortInvCntCombine(vector<int> &Input, vector<int> &TempMerge, const int
 int FindIdxSortedArray(const vector<vector<int>> &Input, const int FindNum, const int row, const int left, const int right);
 int KthSmallest2d(const vector<vector<int>> &arr, const int k);
 int SumOfNodesRepetitions(const shared_ptr<BstType> Curr, unordered_map<int, int> &SumCntMap);
+void ReverseArray(vector<int> &Input, const int start, const int end);
+bool TriangleErrorCheck(const vector<vector<int>> &Input);
+pair<int,int> TriangleGetRight(const pair<int,int> Curr, const int M);
+pair<int,int> TriangleGetLeft(const pair<int,int> Curr, const int M);
+int TriangleMaxSum(const vector<vector<int>> &Input, const pair<int,int> Curr);
+int FindMinElem(const vector<int> &Input, const int start, const int end);
+int GetDigit(const int &Input, const int idx);
 
 typedef struct
 {
@@ -3825,7 +3832,225 @@ int main(int argc, const char * argv[])
     cout << MaxSum << " " << MaxSumCnt << endl;
      */
     
+    /*
+    //DCP197 - Given an array and a number k that's smaller than the length of the array, rotate the array to the right k elements in-place.
+    vector<int> RotArray;
+    for(int i = 0; i < 10; ++i)
+        RotArray.push_back(i);
+    const int RotK = 9;
+    
+    //Reverse entire array
+    ReverseArray(RotArray, 0, RotArray.size()-1);
+    
+    //Reverse between 0 to K-1
+    ReverseArray(RotArray, 0, RotK-1);
+    
+    //Reverse between k to size()-1
+    ReverseArray(RotArray, RotK, RotArray.size()-1);
+    
+    for(const auto &i : RotArray)
+        cout << i << " ";
+    cout << endl;
+    */
+    
+    /*
+    //Rotate array by 1
+    vector<int> RotArray;
+    for(int i = 0; i < 10; ++i)
+        RotArray.push_back(i);
+    
+    int temp = RotArray.back();
+    for(int i = RotArray.size()-1; i > 0; --i)
+        RotArray[i] = RotArray[i-1];
+    RotArray[0] = temp;
+    */
+    
+    /*
+    //DCP198 - Given a set of distinct positive integers, find the largest subset such that every pair of elements in the subset (i, j) satisfies either i % j = 0 or j % i = 0.
+    //For example, given the set [3, 5, 10, 20, 21], you should return [5, 10, 20]. Given [1, 3, 6, 24], return [1, 3, 6, 24].
+    vector<int> Mod0Input = {1,2,3,5,7,11,13,17,19};//{12, 3, 5, 10, 20, 21, 6, 24};
+    sort(Mod0Input.begin(), Mod0Input.end());
+    vector<int> Mod0Output, TempVec;
+    vector<bool> Visited(Mod0Input.size(), false);
+    
+    for(int i = Mod0Input.size()-1; i >= 0; --i)
+    {
+        TempVec.clear();
+        TempVec.push_back(Mod0Input[i]);
+        
+        for(int j = i-1; j >= 0 && !Visited[j]; --j)
+        {
+            if(TempVec.back() % Mod0Input[j] == 0)
+            {
+                Visited[j] = true;
+                TempVec.push_back(Mod0Input[j]);
+            }
+        }
+        
+        Visited[i] = true;
+        if(TempVec.size() > Mod0Output.size())
+            Mod0Output = TempVec;
+    }
+    */
+    
+    /*
+    //DCP201 - You are given an array of arrays of integers, where each array corresponds to a row in a triangle of numbers. For example, [[1], [2, 3], [1, 5, 1]] represents the triangle:
+    //We define a path in the triangle to start at the top and go down one row at a time to an adjacent value, eventually ending with an entry on the bottom row. For example, 1 -> 3 -> 5. The weight of the path is the sum of the entries.
+    vector<vector<int>> TriangleInput;
+    vector<int> Temp = {1};
+    TriangleInput.push_back(Temp);
+    Temp = {2,3};
+    TriangleInput.push_back(Temp);
+    Temp = {1,5,1};
+    TriangleInput.push_back(Temp);
+    
+    if(TriangleErrorCheck(TriangleInput))
+        cout << TriangleMaxSum(TriangleInput, make_pair(0,0)) << endl;
+    else
+        cout << "Error triangle input" << endl;
+    */
+    
+    /*
+    //DCP203 - Suppose an array sorted in ascending order is rotated at some pivot unknown to you beforehand. Find the minimum element in O(log N) time. You may assume the array does not contain duplicates.
+    //For example, given [5, 7, 10, 3, 4], return 3.
+    const vector<int> RotArrayInput = {5, 7, 10, 13, 14, 1, 2};
+    cout << FindMinElem(RotArrayInput, 0, RotArrayInput.size()-1) << endl;
+    */
+    
+    /*
+    //DCP202 - Write a program that checks whether an integer is a palindrome. For example, 121 is a palindrome, as well as 888. 678 is not a palindrome. Do not convert the integer into a string.
+    const int PalindromeNum = 543312345;
+    int NumLen = 1;
+    int quotient = PalindromeNum/10;
+    bool IsNumPalin = true;
+    
+    while(quotient)
+    {
+        quotient /= 10;
+        ++NumLen;
+    }
+    
+    for(int i = 0; i <= NumLen/2; ++i)
+        if( GetDigit(PalindromeNum,i) != GetDigit(PalindromeNum,NumLen-i-1) )
+        {
+            IsNumPalin = false;
+            break;
+        }
+    cout << IsNumPalin << endl;
+    */
+    
+    /*
+    //DCP200 - Let X be a set of n intervals on the real line. We say that a set of points P "stabs" X if every interval in X contains at least one point in P. Compute the smallest set of points that stabs X.
+    //For example, given the intervals [(1, 4), (4, 5), (7, 9), (9, 12)], you should return [4, 9].
+    vector<pair<int,int>> IntervalsIn {{make_pair(8,9)}, {make_pair(2,6)}, {make_pair(1,8)}, {make_pair(1,5)}, {make_pair(5,7)}};
+    //vector<pair<int,int>> IntervalsIn {{make_pair(9,12)}, {make_pair(4,5)}, {make_pair(7,9)}, {make_pair(1,4)}};
+    
+    //Sort based on .first
+    sort(IntervalsIn.begin(), IntervalsIn.end(), PairSortComp2);
+    
+    vector<pair<int,int>> TempInterval;
+    TempInterval.push_back(IntervalsIn[0]);
+    for(int i = 1; i < IntervalsIn.size(); ++i)
+        if(IntervalsIn[i].first != IntervalsIn[i-1].first)
+            TempInterval.push_back(IntervalsIn[i]);
+    
+    vector<int> Ppoints;
+    pair<int,int> MinMaxPoints = make_pair(INT_MAX,INT_MAX);
+    
+    for(int i = 0; i < TempInterval.size(); i++)
+    {
+        if(MinMaxPoints.first == INT_MAX)
+            MinMaxPoints = TempInterval[i];
+        else if(TempInterval[i].first == MinMaxPoints.second)
+        {
+            Ppoints.push_back(MinMaxPoints.second);
+            MinMaxPoints = make_pair(INT_MAX,INT_MAX);
+        }
+        else if(TempInterval[i].first > MinMaxPoints.second)
+        {
+            Ppoints.push_back(MinMaxPoints.second);
+            MinMaxPoints = TempInterval[i];
+        }
+        else
+            MinMaxPoints = make_pair(max(TempInterval[i].first, TempInterval[i-1].first), min(TempInterval[i].second, TempInterval[i-1].second));
+    }
+    if(MinMaxPoints.first != INT_MAX)
+        Ppoints.push_back(MinMaxPoints.first);
+    */
+    
     return 0;
+}
+
+int GetDigit(const int &Input, const int idx)
+{
+    int digit = Input/static_cast<int>(pow(10,idx));
+    digit %= 10;
+    return digit;
+}
+
+int FindMinElem(const vector<int> &Input, const int start, const int end)
+{
+    cout << start << " " << end << endl;
+    
+    if(start > end)
+        return INT_MAX;
+    if(start == end)
+        return Input[start];
+    
+    int middle = (start+end)/2;
+    
+    if(Input[middle] >= Input[start] && Input[end] >= Input[middle+1])
+        return min(Input[start], Input[middle+1]);
+    else if(Input[middle] < Input[start])
+        return FindMinElem(Input, start, middle);
+    else
+        return FindMinElem(Input, middle+1, end);
+}
+
+bool TriangleErrorCheck(const vector<vector<int>> &Input)
+{
+    for(int i = 0; i < Input.size(); ++i)
+        if(Input[i].size() != i+1)
+            return false;
+    return true;
+}
+
+pair<int,int> TriangleGetRight(const pair<int,int> Curr, const int M)
+{
+    if(Curr.first >= M-1)
+        return make_pair(INT_MAX, INT_MAX);
+    return make_pair(Curr.first+1, Curr.second+1);
+}
+
+pair<int,int> TriangleGetLeft(const pair<int,int> Curr, const int M)
+{
+    if(Curr.first >= M-1)
+        return make_pair(INT_MAX, INT_MAX);
+    return make_pair(Curr.first+1, Curr.second);
+}
+
+int TriangleMaxSum(const vector<vector<int>> &Input, const pair<int,int> Curr)
+{
+    if(Curr.first == INT_MAX || Curr.second == INT_MAX)
+        return 0;
+    pair<int,int> Left = TriangleGetLeft(Curr, Input.size());
+    pair<int,int> Right = TriangleGetRight(Curr, Input.size());
+    
+    return (Input[Curr.first][Curr.second] + max( TriangleMaxSum(Input,Left), TriangleMaxSum(Input,Right) ));
+}
+
+void ReverseArray(vector<int> &Input, const int start, const int end)
+{
+    if(start < 0 || start >= Input.size() || end < 0 || end >= Input.size())
+        return;
+    
+    int temp, half_size = (end-start)/2;
+    for(int i = 0; i <= half_size; ++i)
+    {
+        temp = Input[start+i];
+        Input[start+i] = Input[end-i];
+        Input[end-i] = temp;
+    }
 }
 
 int SumOfNodesRepetitions(const shared_ptr<BstType> Curr, unordered_map<int, int> &SumCntMap)
