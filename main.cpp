@@ -35,6 +35,20 @@ using namespace std;
 //int reused = 42; // reused has global scope
 typedef unsigned int uint;
 
+class LinkListNodeType;
+class LinkListNodeType
+{
+public:
+    int val;
+    shared_ptr<LinkListNodeType> next;
+    LinkListNodeType() : val(0), next(nullptr) {}
+    LinkListNodeType(const int i) : val(i), next(nullptr) {}
+    ~LinkListNodeType()
+    {
+        cout << "Destruct: Value: " << val << endl;
+    }
+};
+
 class Book
 {
     string Title;
@@ -468,6 +482,9 @@ pair<int,int> TriangleGetLeft(const pair<int,int> Curr, const int M);
 int TriangleMaxSum(const vector<vector<int>> &Input, const pair<int,int> Curr);
 int FindMinElem(const vector<int> &Input, const int start, const int end);
 int GetDigit(const int &Input, const int idx);
+void PrintLinkedList(const shared_ptr<LinkListNodeType> Head);
+shared_ptr<LinkListNodeType> AddNodeToLlHead(shared_ptr<LinkListNodeType> Head, shared_ptr<LinkListNodeType> Curr);
+shared_ptr<LinkListNodeType> AddNodeToLlTail(shared_ptr<LinkListNodeType> Tail, shared_ptr<LinkListNodeType> Curr);
 
 typedef struct
 {
@@ -3144,7 +3161,7 @@ int main(int argc, const char * argv[])
     */
     
     /*
-    //Find next greater permutation of a given number - DCP 95
+    //Find next greater permutation of a given number - DCP 95/DCP 205
     const int NextPermNum = 291874;
     //Convert given number to vector of digits
     vector<int> NumToVec;
@@ -4025,7 +4042,154 @@ int main(int argc, const char * argv[])
     cout << BraceOutput << endl;
     */
     
+    /*
+    //DCP208 - Given a linked list of numbers and a pivot k, partition the linked list so that all nodes less than k come before nodes greater than or equal to k.
+    //For example, given the linked list 5 -> 1 -> 8 -> 0 -> 3 and k = 3, the solution could be 1 -> 0 -> 5 -> 8 -> 3.
+    const vector<int> LLinput {5,1,8,3,0,3,-1,6,9,4,-2};
+    const int LLpivot = 3;
+    shared_ptr<LinkListNodeType> LLHead = nullptr, TempLLnode = nullptr;
+    
+    //create Linked list by adding new elements to the head
+    for(const auto &i:LLinput)
+    {
+        TempLLnode = make_shared<LinkListNodeType>(i);
+        LLHead = AddNodeToLlHead(LLHead, TempLLnode);
+    }
+    PrintLinkedList(LLHead);
+    
+    //Split the list into lesser than list, and greater than or equal to list
+    shared_ptr<LinkListNodeType> HeadGE = nullptr, TailGE = nullptr, HeadLess = nullptr, TailLess = nullptr;
+    while(LLHead)
+    {
+        TempLLnode = LLHead;
+        LLHead = LLHead->next;
+        if(TempLLnode->val < LLpivot)
+        {
+            TailLess = AddNodeToLlTail(TailLess, TempLLnode);
+            if(nullptr == HeadLess)
+                HeadLess = TailLess;
+        }
+        else
+        {
+            TailGE = AddNodeToLlTail(TailGE, TempLLnode);
+            if(nullptr == HeadGE)
+                HeadGE = TailGE;
+        }
+    }
+    PrintLinkedList(HeadLess);
+    PrintLinkedList(HeadGE);
+    
+    //Combine the 2 lists
+    LLHead = HeadLess;
+    TailLess->next = HeadGE;
+    PrintLinkedList(LLHead);
+    */
+    
+    /*
+    //DCP209 - Write a program that computes the length of the longest common subsequence of three given strings. For example, given "epidemiologist", "refrigeration", and "supercalifragilisticexpialodocious", it should return 5, since the longest common subsequence is "eieio".
+    const string LcsIn1 = "epidemiologist", LcsIn2 = "refrigeration", LcsIn3 = "supercalifragilisticexpialodocious";
+    vector<vector<vector<int>>> LcsDynArray (LcsIn1.size()+1, vector<vector<int>>(LcsIn2.size()+1, vector<int>(LcsIn3.size()+1,0)));
+    for(int i = 1; i <= LcsIn1.size(); ++i)
+        for(int j = 1; j <= LcsIn2.size(); ++j)
+            for(int k = 1; k <= LcsIn3.size(); ++k)
+                if(LcsIn1[i-1] == LcsIn2[j-1] && LcsIn2[j-1] == LcsIn3[k-1])
+                    LcsDynArray[i][j][k] = 1 + LcsDynArray[i-1][j-1][k-1];
+                else
+                    LcsDynArray[i][j][k] = max(LcsDynArray[i-1][j][k], max(LcsDynArray[i][j-1][k], LcsDynArray[i][j][k-1]));
+    cout << LcsDynArray[LcsIn1.size()][LcsIn2.size()][LcsIn3.size()] << endl;
+    
+    //print the subsequence
+    int i = LcsIn1.size(), j = LcsIn2.size(), k = LcsIn3.size();
+    vector<char> Lcs3stringOp;
+    while(i > 0 && j > 0 && k > 0)
+    {
+        if(LcsIn1[i-1] == LcsIn2[j-1] && LcsIn2[j-1] == LcsIn3[k-1])
+        {
+            Lcs3stringOp.push_back(LcsIn1[i-1]);
+            --i;
+            --j;
+            --k;
+        }
+        else
+        {
+            if(LcsDynArray[i][j][k] == LcsDynArray[i-1][j][k])
+                --i;
+            else if(LcsDynArray[i][j][k] == LcsDynArray[i][j-1][k])
+                --j;
+            else
+                --k;
+        }
+    }
+    for(const auto &i : Lcs3stringOp)
+        cout << i;
+    cout << endl;
+    */
+    
+    /*
+    //Longest common substring
+    const string LcsubIn1 = "cardiologist", LcsubIn2 = "epidemiologist";
+    vector<vector<int>> LcsubDynArray (LcsubIn1.size()+1, vector<int>(LcsubIn2.size()+1,0));
+    int maxcnt = INT_MIN, maxi = 0, maxj = 0;
+    for(int i = 1; i <= LcsubIn1.size(); ++i)
+        for(int j = 1; j <= LcsubIn2.size(); ++j)
+            if(LcsubIn1[i-1] == LcsubIn2[j-1])
+            {
+                LcsubDynArray[i][j] = 1 + LcsubDynArray[i-1][j-1];
+                if(maxcnt < LcsubDynArray[i][j])
+                {
+                    maxcnt = LcsubDynArray[i][j];
+                    maxi = i;
+                    maxj = j;
+                }
+            }
+    
+    cout << maxcnt << " " << maxi << " " << maxj << endl;
+    
+    //print the subsequence
+    int i = maxi, j = maxj;
+    vector<char> Lcsub2stringOp;
+    while(LcsubDynArray[i][j])
+    {
+        Lcsub2stringOp.push_back(LcsubIn1[i-1]);
+        --i;
+        --j;
+    }
+    for(const auto &i : Lcsub2stringOp)
+        cout << i;
+    cout << endl;
+    */
+    
     return 0;
+}
+
+void PrintLinkedList(const shared_ptr<LinkListNodeType> Head)
+{
+    shared_ptr<LinkListNodeType> Temp = Head;
+    cout << "Print LL ";
+    while(Temp)
+    {
+        cout << Temp->val << " ";
+        Temp = Temp->next;
+    }
+    cout << endl;
+}
+
+shared_ptr<LinkListNodeType> AddNodeToLlHead(shared_ptr<LinkListNodeType> Head, shared_ptr<LinkListNodeType> Curr)
+{
+    if(nullptr == Curr)
+        return Head;
+    Curr->next = Head;
+    return Curr;
+}
+
+shared_ptr<LinkListNodeType> AddNodeToLlTail(shared_ptr<LinkListNodeType> Tail, shared_ptr<LinkListNodeType> Curr)
+{
+    if(nullptr == Curr)
+        return Tail;
+    Curr->next = nullptr;
+    if(Tail)
+        Tail->next = Curr;
+    return Curr;
 }
 
 int GetDigit(const int &Input, const int idx)
