@@ -485,6 +485,18 @@ int GetDigit(const int &Input, const int idx);
 void PrintLinkedList(const shared_ptr<LinkListNodeType> Head);
 shared_ptr<LinkListNodeType> AddNodeToLlHead(shared_ptr<LinkListNodeType> Head, shared_ptr<LinkListNodeType> Curr);
 shared_ptr<LinkListNodeType> AddNodeToLlTail(shared_ptr<LinkListNodeType> Tail, shared_ptr<LinkListNodeType> Curr);
+int FindCollatzCnt(const int N, unordered_map<int,int> &CollatzMap);
+typedef pair<int,int> INT_PAIR;
+struct CompareSortedKlists
+{
+    bool operator()(const INT_PAIR &a, const INT_PAIR &b)
+    {
+        return a.first < b.first;
+    }
+};
+
+void FindIpAddr(const string input, const int stringidx, int IpByteVal, vector<int> &IpAddr, int IpBytePos);
+void PrintDebugIpAddrData(const int &stringidx, const int &IpByteVal, const vector<int> &IpAddr, const int &IpBytePos, const int &LoopCtr);
 
 typedef struct
 {
@@ -4159,7 +4171,220 @@ int main(int argc, const char * argv[])
     cout << endl;
     */
     
+    /*
+    //DCp210 - A Collatz sequence in mathematics can be defined as follows. Starting with any positive integer:
+    //if n is even, the next number in the sequence is n / 2
+      //  if n is odd, the next number in the sequence is 3n + 1
+        //    It is conjectured that every such sequence eventually reaches the number 1. Test this conjecture.
+          //   Bonus: What input n <= 1000000 gives the longest sequence?
+    
+    unordered_map<int,int> CollatzMap;
+    const int N = 100;
+    int MaxCnt = INT_MIN, MaxN = INT_MIN, tempcnt;
+    for(int i = 2; i <= N; ++i)
+    {
+        tempcnt = FindCollatzCnt(i,CollatzMap);
+        if(MaxCnt < tempcnt)
+        {
+            MaxCnt = tempcnt;
+            MaxN = i;
+        }
+    }
+    cout << MaxN << " " << MaxCnt << endl;
+    */
+    
+    /*
+    //shortest range in 'k' sorted lists
+    //Find smallest range containing elements from k lists
+    //Given k sorted lists of integers of size n each, find the smallest range that includes at least element from each of the k lists. If more than one smallest ranges are found, print any one of them.
+    const vector<vector<int>> Ksortedlist = {{1,20,30,40,80,100,945},{81,85,89,101},{4,45,102,104}};
+    vector<int> list_idx(Ksortedlist.size(), 0);
+    
+    //priority_queue<INT_PAIR,vector<INT_PAIR>,greater<INT_PAIR>> PQ_min_sortlist;
+    //priority_queue<INT_PAIR,vector<INT_PAIR>,less<INT_PAIR>> PQ_max_sortlist;
+    multiset<INT_PAIR, CompareSortedKlists> MS_sortlist;
+    
+    //initialize set (binart search tree) with min. elements from the sorted lists
+    for(int i = 0; i < Ksortedlist.size(); ++i)
+        MS_sortlist.insert(make_pair(Ksortedlist[i][0],i));
+    
+    int rangemin = INT_MIN, rangemax = INT_MIN, rangediff = INT_MAX, temp_diff;
+    INT_PAIR min_elem_idx_pair;
+    while(1)
+    {
+        temp_diff = MS_sortlist.rbegin()->first - MS_sortlist.begin()->first;
+        if(temp_diff < rangediff)
+        {
+            rangediff = temp_diff;
+            rangemin = MS_sortlist.begin()->first;
+            rangemax = MS_sortlist.rbegin()->first;
+        }
+        
+        //pop the min. element and advance to the next element in the min array's list
+        min_elem_idx_pair = *MS_sortlist.begin();
+        MS_sortlist.erase(MS_sortlist.begin());
+        ++list_idx[min_elem_idx_pair.second];
+        if( list_idx[min_elem_idx_pair.second] >= Ksortedlist[min_elem_idx_pair.second].size() )
+            break;
+        MS_sortlist.insert(make_pair(Ksortedlist[min_elem_idx_pair.second][list_idx[min_elem_idx_pair.second]],min_elem_idx_pair.second));
+    }
+    cout << rangemin << " " << rangemax << " " << rangediff << endl;
+    */
+    
+    /*
+    //DCP212 - Spreadsheets often use this alphabetical encoding for its columns: "A", "B", "C", ..., "AA", "AB", ..., "ZZ", "AAA", "AAB", ....
+    //Given a column number, return its alphabetical column id. For example, given 1, return "A". Given 27, return "AA".
+    string ExcelCol = "AAZ";
+    const int base = 26;
+    int ColNum = 0, NumDigits = 0;
+    vector<int> DigitVal;
+    
+    for_each(ExcelCol.begin(), ExcelCol.end(), [](char &i){i=tolower(i);});
+    transform(ExcelCol.begin(), ExcelCol.end(), back_inserter(DigitVal),
+              [](const char &i){return (static_cast<int>(i)-static_cast<int>('a')+1);});
+    
+    for(auto i = DigitVal.crbegin(); i != DigitVal.crend(); ++i)
+    {
+        ColNum += (pow(base,NumDigits)*(*i));
+        ++NumDigits;
+    }
+    cout << ColNum << endl;
+    */
+    
+    /*
+    //DCP213 - Given a string of digits, generate all possible valid IP address combinations.
+    //IP addresses must follow the format A.B.C.D, where A, B, C, and D are numbers between 0 and 255. Zero-prefixed numbers, such as 01 and 065, are not allowed, except for 0 itself.
+    //For example, given "2542540123", you should return ['254.25.40.123', '254.254.0.123'].
+    const string Ip = "256000";//2542540123";
+    vector<int> TempIp;
+    FindIpAddr(Ip, Ip.size()-1, 0, TempIp, 0);
+    */
+    
+    /*
+    //DCP214 - Given an integer n, return the length of the longest consecutive run of 1s in its binary representation.
+    //For example, given 156, you should return 3.
+    int BinNum = 253;
+    int OnesCnt = 0, MaxOnesCnt = INT_MIN, BinDigit = 0;
+    while(BinNum)
+    {
+        BinDigit = BinNum & 1;
+        BinNum >>= 1;
+        if(BinDigit)
+            ++OnesCnt;
+        else
+        {
+            if(MaxOnesCnt < OnesCnt)
+                MaxOnesCnt = OnesCnt;
+            OnesCnt = 0;
+        }
+    }
+    if(MaxOnesCnt < OnesCnt)
+        MaxOnesCnt = OnesCnt;
+    cout << MaxOnesCnt << endl;
+     */
+    
     return 0;
+}
+
+void FindIpAddr(const string input, const int stringidx, int IpByteVal, vector<int> &IpAddr, int IpBytePos)
+{
+    static int loopctr = 0;
+    
+    if(stringidx < 0)
+    {
+        if(4 == IpAddr.size())
+        {
+            //valid IP address
+            cout << "!!!!!!!!!!!!valid IP!!!!!!!!!!!" << endl;
+            PrintDebugIpAddrData(stringidx, IpByteVal, IpAddr, IpBytePos, loopctr);
+        }
+        else
+        {
+            cout << "stringidx < 0" << endl;
+            PrintDebugIpAddrData(stringidx, IpByteVal, IpAddr, IpBytePos, loopctr);
+        }
+        return;
+    }
+    
+    if(IpAddr.size() > 4)
+    {
+        cout << "IpAddr.size() > 4" << endl;
+        PrintDebugIpAddrData(stringidx, IpByteVal, IpAddr, IpBytePos, loopctr);
+        return;
+    }
+    
+    if(IpAddr.size() == 4 && stringidx >= 2)
+    {
+        //we have reached size of 4 bytes and still have 3+ digits to process. So its an invalid combination
+        cout << "IpAddr.size() == 4 && stringidx >= 2" << endl;
+        PrintDebugIpAddrData(stringidx, IpByteVal, IpAddr, IpBytePos, loopctr);
+        return;
+    }
+    
+    ++loopctr;
+    int digit = static_cast<int>(input[stringidx]) - static_cast<int>('0');
+    
+    cout << "No errors. Digit " << digit << endl;
+    PrintDebugIpAddrData(stringidx, IpByteVal, IpAddr, IpBytePos, loopctr);
+    
+    //put current digit in IpAddr and advance to next input only if BytePos == 0
+    if(0 == IpBytePos)
+    {
+        IpAddr.push_back(digit);
+        FindIpAddr(input, stringidx-1, 0, IpAddr, 0);
+        IpAddr.pop_back(); //remove the added digit for next combination
+    }
+    
+    //add current digit to previous byte value and add to IpAddr and advance to next input
+    //do this only if current digit is non-zero, and bytepos != 0
+    IpByteVal += (pow(10,IpBytePos)*digit);
+    if(IpByteVal <= 255 && 0 != digit && 0 != IpBytePos)
+    {
+        IpAddr.push_back(IpByteVal);
+        FindIpAddr(input, stringidx-1, 0, IpAddr, 0);
+        IpAddr.pop_back(); //remove the added digit for next combination
+    }
+    
+    //add current digit to previous byte value and continue to next digit withtout adding to IpAddr
+    //do this only if we have not reached last digit yet
+    if(IpByteVal <= 255 && stringidx > 0)
+    {
+        FindIpAddr(input, stringidx-1, IpByteVal, IpAddr, IpBytePos+1);
+    }
+}
+
+void PrintDebugIpAddrData(const int &stringidx, const int &IpByteVal, const vector<int> &IpAddr, const int &IpBytePos, const int &LoopCtr)
+{
+    cout << "Idx " << stringidx << " IpByteVal " << IpByteVal << " BytePos " << IpBytePos << " loopctr " << LoopCtr << endl;
+    for(const auto &i:IpAddr)
+        cout << i << ":";
+    cout << endl << endl;
+}
+
+int FindCollatzCnt(const int N, unordered_map<int,int> &CollatzMap)
+{
+    if(CollatzMap.find(N) != CollatzMap.end())
+        return CollatzMap[N];
+        
+    int RetCnt = 1, temp = N;
+    while(temp > 1)
+    {
+        if(temp%2 == 0)
+            temp = temp/2;
+        else
+            temp = (3*temp)+1;
+        
+        if(CollatzMap.find(temp) != CollatzMap.end())
+        {
+            RetCnt += CollatzMap[temp];
+            break;
+        }
+        else
+            ++RetCnt;
+    }
+    
+    CollatzMap.insert(make_pair(N, RetCnt));
+    return RetCnt;
 }
 
 void PrintLinkedList(const shared_ptr<LinkListNodeType> Head)
