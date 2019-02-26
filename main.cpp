@@ -25,6 +25,7 @@
 #include <iomanip>
 #include <tuple>
 #include <climits>
+#include <array>
 //#include <cmath>
 //#include "Sales_item.h"
 
@@ -494,9 +495,13 @@ struct CompareSortedKlists
         return a.first < b.first;
     }
 };
-
 void FindIpAddr(const string input, const int stringidx, int IpByteVal, vector<int> &IpAddr, int IpBytePos);
 void PrintDebugIpAddrData(const int &stringidx, const int &IpByteVal, const vector<int> &IpAddr, const int &IpBytePos, const int &LoopCtr);
+shared_ptr<BstType> IsNodePresentBst(const shared_ptr<BstType> Curr, const int A);
+int BstLevelCnt(const shared_ptr<BstType> Curr, const int A);
+int FindContOnesLocFromLsb(int A);
+void MultiplyMatrix(const vector<vector<int>> &A, const vector<vector<int>> &B, vector<vector<int>> &Output);
+void ComputeMatrixPower(const vector<vector<int>> &A, const int N, vector<vector<int>> &Output);
 
 typedef struct
 {
@@ -4283,7 +4288,199 @@ int main(int argc, const char * argv[])
     cout << MaxOnesCnt << endl;
      */
     
+    /*
+    //DCP216 - Given a number in Roman numeral format, convert it to decimal.
+    const string RomanIn = "XLV";
+    const unordered_map<char,int> RomanConv = {make_pair('M',1000),make_pair('D',500),make_pair('C',100),
+        make_pair('L',50),make_pair('X',10),make_pair('V',5),make_pair('I',1)};
+    int DecOutput = 0, PrevVal = INT_MAX, CurrVal = 0;
+    auto itr = RomanConv.begin();
+    for(const auto &i : RomanIn)
+    {
+        itr = RomanConv.find(i);
+        if(RomanConv.end() == itr)
+        {
+            cout << "Invalid input " << i << endl;
+            DecOutput = INT_MIN;
+            break;
+        }
+        CurrVal = (*itr).second;
+        if(CurrVal <= PrevVal)
+            DecOutput += CurrVal;
+        else
+            DecOutput += (CurrVal-PrevVal-PrevVal);
+        PrevVal = CurrVal;
+    }
+    cout << DecOutput << endl;
+    */
+    
+    /*
+    //Distance between 2 nodes in a BST
+        //Check if the 2 nodes are present in BST
+        //Find LCA of the 2 nodes
+        //Find distance between each node and LCA, and add them
+    const vector<int> TreeInputInt = {4,2,1,3,6,5,7};
+    for(const auto &i : TreeInputInt)
+        InsertKeyToBst(i, " ");
+    PrintBst();
+    const int NodeAval = 5, NodeBval = 4;
+    shared_ptr<BstType> NodeAPtr = IsNodePresentBst(BstHead, NodeAval);
+    shared_ptr<BstType> NodeBPtr = IsNodePresentBst(BstHead, NodeBval);
+    if(nullptr != NodeAPtr && nullptr != NodeBPtr)
+    {
+        shared_ptr<BstType> LcaNodePtr = LcaBst(BstHead, NodeAPtr->key, NodeBPtr->key);
+        cout << "BT BST " << (LcaNodePtr ? LcaNodePtr->key : -1) << endl;
+        
+        cout << BstLevelCnt(LcaNodePtr, NodeAPtr->key) + BstLevelCnt(LcaNodePtr, NodeBPtr->key) << endl;
+    }
+    */
+    
+    /*
+    //DCP217 - We say a number is sparse if there are no adjacent ones in its binary representation. For example, 21 (10101) is sparse, but 22 (10110) is not. For a given input N, find the smallest sparse number greater than or equal to N.
+    //Do this in faster than O(N log N) time.
+    const int SparseIn = 38; //1011
+    int SparseOut = SparseIn, ContOnesLoc, mask;
+    ContOnesLoc = FindContOnesLocFromLsb(SparseOut);
+    while(INT_MIN != ContOnesLoc)
+    {
+        //set everything below the ContOnesLoc to 0, and then set the next bit to 1
+        //set all the bits from ContOnesLoc to LSB to 0
+        mask = 1 << (ContOnesLoc+1);
+        --mask;
+        mask = ~mask;
+        SparseOut &= mask;
+        
+        //set (ContOnesLoc + 1) bit to 1
+        mask = 1 << (ContOnesLoc+1);
+        SparseOut |= mask;
+        ContOnesLoc = FindContOnesLocFromLsb(SparseOut);
+    }
+    cout << SparseOut << endl;
+     */
+    
+    /*
+    //compute fibanocci in O(log n) time
+    //the top right element (or bottom left element) of matrix ^ N gives the Fib(N) number
+    //the matrix is a 2x2 matrix [1,1]
+    //                           [1,0]
+    const int FibN = 25;
+    const vector<vector<int>> Fib2x2array = {{1,1},{1,0}};
+    vector<vector<int>> FibOutput;
+    ComputeMatrixPower(Fib2x2array, FibN, FibOutput);
+    cout << FibOutput[0][1] << endl;
+    */
+
     return 0;
+}
+
+void ComputeMatrixPower(const vector<vector<int>> &A, const int N, vector<vector<int>> &Output)
+{
+    if(N == 0)
+        return;
+    if(N == 1)
+    {
+        Output = A;
+        return;
+    }
+    
+    //Compute power N/2 and multiply it twice
+    ComputeMatrixPower(A,N/2,Output);
+    vector<vector<int>> Temp;
+    MultiplyMatrix(Output, Output, Temp);
+    
+    //if N is odd, multiply input again
+    if(N % 2)
+        MultiplyMatrix(Temp, A, Output);
+    else
+        Output = Temp;
+}
+
+void MultiplyMatrix(const vector<vector<int>> &A, const vector<vector<int>> &B, vector<vector<int>> &Output)
+{
+    //Sanity checks - size of all rows of both input matrices should be the same
+    //Number of columns of 1st matrix should be same as number of rows of 2nd matrix
+    if(A.empty() || B.empty())
+        return;
+    
+    int Arow = A.size();
+    int Acol = A[0].size();
+    for(const auto &i : A)
+        if(i.size() != Acol)
+            return;
+    
+    int Brow = B.size();
+    int Bcol = B[0].size();
+    for(const auto &i : B)
+        if(i.size() != Bcol)
+            return;
+    
+    if(Acol != Brow)
+        return;
+
+    Output.resize(Arow);
+    for(int i = 0; i < Output.size(); ++i)
+        Output[i].resize(Bcol);
+    
+    for(int i = 0; i < Arow; ++i)
+        for(int j = 0; j < Bcol; ++j)
+        {
+            Output[i][j] = 0;
+            for(int k = 0; k < Acol; ++k)
+                Output[i][j] += (A[i][k] * B[k][j]);
+        }
+}
+
+int FindContOnesLocFromLsb(int A)
+{
+    int ret = INT_MIN;
+    int bin_idx = 0, curr_digit, prev_digit;
+    prev_digit = A & 1;
+    A >>= 1;
+    while(A)
+    {
+        ++bin_idx;
+        curr_digit = A & 1;
+        A >>= 1;
+        
+        if(curr_digit & prev_digit)
+            //2 back-to-back digits are 1
+            ret = bin_idx;
+        else
+        {
+            //2 back-to-back digits are not 1. If the 1st of back-to-back digits with 1 have been identified,
+            //return
+            if(INT_MIN != ret)
+                break;
+        }
+        prev_digit = curr_digit;
+    }
+    return ret;
+}
+
+shared_ptr<BstType> IsNodePresentBst(const shared_ptr<BstType> Curr, const int A)
+{
+    if(nullptr == Curr)
+        return Curr;
+    
+    if(A == Curr->key)
+        return Curr;
+    else if(A < Curr->key)
+        return IsNodePresentBst(Curr->left, A);
+    else
+        return IsNodePresentBst(Curr->right, A);
+}
+
+int BstLevelCnt(const shared_ptr<BstType> Curr, const int A)
+{
+    if(nullptr == Curr)
+        return INT_MIN;
+    
+    if(A == Curr->key)
+        return 0;
+    else if(A < Curr->key)
+        return BstLevelCnt(Curr->left, A) + 1;
+    else
+        return BstLevelCnt(Curr->right, A) + 1;
 }
 
 void FindIpAddr(const string input, const int stringidx, int IpByteVal, vector<int> &IpAddr, int IpBytePos)
