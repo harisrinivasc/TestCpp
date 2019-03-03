@@ -4414,6 +4414,7 @@ int main(int argc, const char * argv[])
     cout << FibOutput[0][1] << endl;
     */
 
+    /*
     //Trie
     shared_ptr<TrieType> TrieHead = make_shared<TrieType>();
     TrieHead->AddWord("banana");
@@ -4423,6 +4424,34 @@ int main(int argc, const char * argv[])
     TrieHead->AddWord("z");
     TrieHead->AddWord("zoo");
     TrieHead->PrintAllWords();
+    */
+    
+    /*
+    //DCP221 - Let's define a "sevenish" number to be one which is either a power of 7, or the sum of unique powers of 7. The first few sevenish numbers are 1, 7, 8, 49, and so on. Create an algorithm to find the nth sevenish number.
+    bool ExitLoop = false;
+    int pow7;
+    vector<int> OpVec;
+    auto size = OpVec.size();
+    const int SevenN = 20;
+    for(int i = 0; i < SevenN; ++i)
+    {
+        pow7 = static_cast<int>(pow(7, i));
+        OpVec.emplace_back(pow7);
+        size = OpVec.size() - 1;
+        for(int j = 0; j < size; ++j)
+        {
+            OpVec.emplace_back(OpVec.at(j) + pow7);
+            if(SevenN == OpVec.size())
+            {
+                ExitLoop = true;
+                break;
+            }
+        }
+        if(ExitLoop)
+            break;
+    }
+    cout << OpVec.at(SevenN-1) << endl;
+    */
     
     return 0;
 }
