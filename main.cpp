@@ -502,6 +502,7 @@ int BstLevelCnt(const shared_ptr<BstType> Curr, const int A);
 int FindContOnesLocFromLsb(int A);
 void MultiplyMatrix(const vector<vector<int>> &A, const vector<vector<int>> &B, vector<vector<int>> &Output);
 void ComputeMatrixPower(const vector<vector<int>> &A, const int N, vector<vector<int>> &Output);
+int MultByPowerOf10(int num, int pow);
 
 class TrieType;
 class TrieType : public enable_shared_from_this<TrieType>
@@ -4453,9 +4454,68 @@ int main(int argc, const char * argv[])
     cout << OpVec.at(SevenN-1) << endl;
     */
     
+    /*
+    //Multiply 2 integers
+    const int num1 = 8826, num2 = 1234;
+    int smaller_num = (num1 < num2) ? num1 : num2;
+    int larger_num = (num1 < num2) ? num2 : num1;
+    
+    //Extract each digit of smaller_num without using division/modulo
+    ostringstream str_stream;
+    str_stream << smaller_num;
+    string smaller_num_str = str_stream.str();
+    
+    int MultAnswer = 0;
+    for(int i = 0; i < smaller_num_str.size(); ++i)
+    {
+        int digit = static_cast<int>(smaller_num_str[smaller_num_str.size()-1-i]) - static_cast<int>('0');
+        
+        //mulitply larger number by smaller number's digit (by adding larger number 'digit' times)
+        int temp = 0;
+        for(int j = 0; j < digit; ++j)
+            temp += larger_num;
+        
+        //multiply by power of 10
+        MultAnswer += MultByPowerOf10(temp, i);
+    }
+    cout << MultAnswer << endl;
+    */
+    
+    /*
+    //DCP224 - Given a sorted array, find the smallest positive integer that is not the sum of a subset of the array.
+    //For example, for the input [1, 2, 3, 10], you should return 7.
+    //Do this in O(N) time.
+    const vector<int> SortedArray = {1, 2, 3, 4, 6, 10};
+    int SubArraySum = SortedArray[0];
+    if(SubArraySum > 1)
+        cout << "1" << endl;
+    else
+    {
+        for(int i = 1; i < SortedArray.size(); ++i)
+        {
+            if(SortedArray[i] > SortedArray[i-1] + 1)
+                break;
+            SubArraySum += SortedArray[i];
+        }
+        cout << SubArraySum+1 << endl;
+    }
+    */
+    
     return 0;
 }
 
+int MultByPowerOf10(int num, int pow)
+{
+    int ret = num, temp;
+    while(pow)
+    {
+        temp = (ret << 3) + (ret << 1); //multiply ret by 10
+        ret = temp;
+        --pow;
+    }
+    return ret;
+}
+    
 void ComputeMatrixPower(const vector<vector<int>> &A, const int N, vector<vector<int>> &Output)
 {
     if(N == 0)
