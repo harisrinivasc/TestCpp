@@ -503,6 +503,50 @@ int FindContOnesLocFromLsb(int A);
 void MultiplyMatrix(const vector<vector<int>> &A, const vector<vector<int>> &B, vector<vector<int>> &Output);
 void ComputeMatrixPower(const vector<vector<int>> &A, const int N, vector<vector<int>> &Output);
 
+class TrieType;
+class TrieType : public enable_shared_from_this<TrieType>
+{
+private:
+    bool IsEnd;
+    unordered_map<char, shared_ptr<TrieType>> Child;
+    void PrintAllWords(shared_ptr<TrieType> Curr, string &word_op)
+    {
+        if(Curr->IsEnd)
+            cout << word_op << endl;
+        for(auto itr = Curr->Child.cbegin(); itr != Curr->Child.cend(); ++itr)
+        {
+            word_op.push_back(itr->first);
+            PrintAllWords(itr->second, word_op);
+            word_op.pop_back();
+        }
+    }
+public:
+    TrieType()
+    {
+        IsEnd = false;
+        Child.clear();
+    }
+    void AddWord(const string word_input)
+    {
+        shared_ptr<TrieType> Curr = shared_from_this(), TempNew;
+        for(const auto &i:word_input)
+        {
+            if(Curr->Child.find(i) == Curr->Child.end())
+            {
+                TempNew = make_shared<TrieType>();
+                Curr->Child.insert(make_pair(i, TempNew));
+            }
+            Curr = Curr->Child[i];
+        }
+        Curr->IsEnd = true;
+    }
+    void PrintAllWords(void)
+    {
+        string Output_word;
+        PrintAllWords( shared_from_this(), Output_word );
+    }
+};
+
 typedef struct
 {
     int x;
@@ -4370,6 +4414,16 @@ int main(int argc, const char * argv[])
     cout << FibOutput[0][1] << endl;
     */
 
+    //Trie
+    shared_ptr<TrieType> TrieHead = make_shared<TrieType>();
+    TrieHead->AddWord("banana");
+    TrieHead->AddWord("bang");
+    TrieHead->AddWord("a");
+    TrieHead->AddWord("and");
+    TrieHead->AddWord("z");
+    TrieHead->AddWord("zoo");
+    TrieHead->PrintAllWords();
+    
     return 0;
 }
 
