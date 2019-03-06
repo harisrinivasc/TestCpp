@@ -296,6 +296,7 @@ public:
     }
 };
 
+//depth first search
 class Dfs : public GraphType
 {
 private:
@@ -332,6 +333,7 @@ public:
     }
 };
 
+//breadth first search
 class Bfs : public GraphType
 {
 private:
@@ -503,6 +505,8 @@ int FindContOnesLocFromLsb(int A);
 void MultiplyMatrix(const vector<vector<int>> &A, const vector<vector<int>> &B, vector<vector<int>> &Output);
 void ComputeMatrixPower(const vector<vector<int>> &A, const int N, vector<vector<int>> &Output);
 int MultByPowerOf10(int num, int pow);
+int FindKthElemToDelete(const int N, const int K);
+string SplitSentance(const string &inString, const unordered_set<string> &WordDict, int idx);
 
 class TrieType;
 class TrieType : public enable_shared_from_this<TrieType>
@@ -3382,9 +3386,10 @@ int main(int argc, const char * argv[])
     for(unsigned int i = 3; i < PrimeNumMax; i=i+2)
     {
         IsPrime = true;
+        int SqRoot = sqrt(i);
         for(const auto &j : PrimeNums)
         {
-            if(0 == i%j)
+            if(0 == i%j && j <= SqRoot)
             {
                 IsPrime = false;
                 break;
@@ -4501,7 +4506,199 @@ int main(int argc, const char * argv[])
     }
     */
     
+    /*
+    //DCP225 - There are N prisoners standing in a circle, waiting to be executed. The executions are carried out starting with the kth person, and removing every successive kth person going clockwise until there is no one left.
+    //Given N and k, write an algorithm to determine where a prisoner should stand in order to be the last survivor.
+    //For example, if N = 5 and k = 2, the order of executions would be [2, 4, 1, 5, 3], so you should return 3.
+    //Bonus: Find an O(log N) solution if k = 2.
+    const int N = 5, K = 2;
+    cout << FindKthElemToDelete(N,K) << endl;
+    */
+    
+    /*
+    //Word break problem
+    //Given a string, break/split into different words available in dictionary
+    const string inString = "iamace";
+    const unordered_set<string> WordDict = {"i", "am", "ace", "a"};
+    cout << SplitSentance(inString, WordDict, 0) << endl;
+    */
+    
+    /*
+    //Facotorize a number into primes
+    vector<int> PrimeNums = {2}; //look-up table for all prime numbers between 2 and FactNum
+    const int FactNum = 439;
+    int IsPrime = true;
+    for(unsigned int i = 3; i <= FactNum; i=i+2)
+    {
+        IsPrime = true;
+        int SqRoot = sqrt(i);
+        for(const auto &j : PrimeNums)
+        {
+            if(0 == i%j && j <= SqRoot)
+            {
+                IsPrime = false;
+                break;
+            }
+        }
+        if(IsPrime)
+            PrimeNums.push_back(i);
+    }
+    
+    vector<int> FactorizeOp;
+    const unordered_set<int> PrimeSet (PrimeNums.begin(), PrimeNums.end());
+    int idx = 0, temp = FactNum;
+    while(temp > 1)
+    {
+        if(temp % PrimeNums[idx] == 0)
+        {
+            FactorizeOp.push_back(PrimeNums[idx]);
+            temp = temp/PrimeNums[idx];
+            if(PrimeSet.find(temp) != PrimeSet.end())
+            {
+                FactorizeOp.push_back(temp);
+                break;
+            }
+        }
+        else
+            ++idx;
+    }
+    for(const auto &i:FactorizeOp)
+        cout << i << " ";
+    cout << endl;
+    */
+    
+    /*
+    //Leetcode 149 - max points on a line
+    struct Point
+    {
+        int x;
+        int y;
+        Point() : x(0), y(0) {}
+        Point(int a, int b) : x(a), y(b) {}
+    };
+    class Solution
+    {
+     #if 0
+        class LineEq
+        {
+        public:
+            long long int slope;
+            long long int constant;
+            int num_points;
+            Point p1;
+            Point p2;
+            LineEq(const Point p1, const Point p2) : p1(p1), p2(p2), num_points(2)
+            {
+                if(p2.x != p1.x)
+                {
+                    slope = (p2.y-p1.y)/(p2.x-p1.x);
+                    constant = p1.y - (slope*p1.x);
+                }
+                else
+                {
+                    slope = INT_MAX;
+                    constant = p1.x;
+                }
+            }
+            bool IsInLine(const Point p) const
+            {
+                if(INT_MAX != slope)
+                    return ((slope*p.x) + constant == p.y);
+                else
+                    return (constant == p.x);
+            }
+        };
+     #endif
+    public:
+        int maxPoints(vector<Point>& points)
+        {
+            if(points.size() <= 2)
+                return points.size();
+            
+            int MaxCnt = INT_MIN;
+            
+            for(int i = 0; i < points.size(); ++i)
+            {
+                unordered_map<long double,int> SlopeSet;
+                int Samex = 1;
+                int Samepnt = 0;
+                for(int j = 0; j < points.size(); ++j)
+                {
+                    if(i == j)
+                        continue;
+                    if(points[i].x == points[j].x &&
+                       points[i].y == points[j].y)
+                    {
+                        ++Samepnt;
+                    }
+                    if(points[i].x == points[j].x)
+                    {
+                        ++Samex;
+                        continue;
+                    }
+                    long double slope = static_cast<long double>(points[j].y - points[i].y)/static_cast<long double>(points[j].x - points[i].x);
+                    if(SlopeSet.find(slope) != SlopeSet.end())
+                    {
+                        ++SlopeSet[slope];
+                        MaxCnt = max(MaxCnt,SlopeSet[slope]);
+                    }
+                    else
+                    {
+                        SlopeSet.insert(make_pair(slope, 2+Samepnt));
+                        MaxCnt = max(MaxCnt,SlopeSet[slope]);
+                    }
+                }
+                MaxCnt = max(MaxCnt,Samex);
+            }
+            
+            return MaxCnt;
+        }
+    };
+    
+    vector<Point> PointsInput;
+    PointsInput.emplace_back(0,0);
+    PointsInput.emplace_back(94911151,94911150);
+    PointsInput.emplace_back(94911152,94911151);
+    Solution PointsOnLine;
+    cout << PointsOnLine.maxPoints(PointsInput) << endl;
+    */
+
     return 0;
+}
+
+string SplitSentance(const string &inString, const unordered_set<string> &WordDict, int idx)
+{
+    string result;
+    
+    if(idx >= inString.size())
+        return "";
+    string temp;
+    for(int i = idx; i < inString.size(); ++i)
+    {
+        //cout << inString.substr(idx,i-idx) << endl;
+        temp.push_back(inString[i]);
+        if(WordDict.find(temp) != WordDict.end())
+        {
+            result = SplitSentance(inString, WordDict, i+1);
+            if(result != "")
+            {
+                temp.push_back(' ');
+                temp.append(result);
+                cout << temp << endl;
+                return temp;
+            }
+        }
+    }
+    if(WordDict.find(temp) != WordDict.end())
+        return temp;
+    return "";
+}
+
+int FindKthElemToDelete(const int N, const int K)
+{
+    if(1 == N)
+        return 0;
+    return( (FindKthElemToDelete(N-1,K) + K)  % N );
 }
 
 int MultByPowerOf10(int num, int pow)
