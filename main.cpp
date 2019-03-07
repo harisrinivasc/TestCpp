@@ -507,6 +507,8 @@ void ComputeMatrixPower(const vector<vector<int>> &A, const int N, vector<vector
 int MultByPowerOf10(int num, int pow);
 int FindKthElemToDelete(const int N, const int K);
 string SplitSentance(const string &inString, const unordered_set<string> &WordDict, int idx);
+void RunDfsArray(const int idx, vector<bool> &Visited, stack<char> &TopoSortOp, const vector<char> &CharArray);
+bool CrackSafeDfs(const int &K, const int &N, unordered_set<string> &Visited, string &OpPwd);
 
 class TrieType;
 class TrieType : public enable_shared_from_this<TrieType>
@@ -4663,7 +4665,89 @@ int main(int argc, const char * argv[])
     cout << PointsOnLine.maxPoints(PointsInput) << endl;
     */
 
+    /*
+    //Simple DFS based on array
+    //Array is Directed Acyclic Graph (DAG). Every even idx is connected to the next even idx.
+    //Every 'multiple of 3' idx is connected to the next 'multiple of 3' idx
+    //Perform Topological sort
+    vector<char> CharArray;
+    const int N = 13;
+    for(int i = 0; i < N; ++i)
+        CharArray.push_back('A'+i);
+    stack<char> TopoSortOp;
+    vector<bool> DfsArrayVisited(CharArray.size(), false);
+    for(int i = 0; i < N; ++i)
+        if(!DfsArrayVisited[i])
+            RunDfsArray(i,DfsArrayVisited,TopoSortOp,CharArray);
+    while(!TopoSortOp.empty())
+    {
+        cout << TopoSortOp.top() << " ";
+        TopoSortOp.pop();
+    }
+    cout << endl;
+    */
+    
+    /*
+    //Leetcode 753 - cracking the safe
+    //There is a box protected by a password. The password is n digits, where each letter can be one of the first k digits 0, 1, ..., k-1.
+    //You can keep inputting the password, the password will automatically be matched against the last n digits entered.
+    //For example, assuming the password is "345", I can open it when I type "012345", but I enter a total of 6 digits.
+    //Please return any string of minimum length that is guaranteed to open the box after the entire string is inputted.
+    const int K = 3;
+    const int N = 3;
+    unordered_set<string> Visited;
+    string InitPwd (N,'0');
+    Visited.insert(InitPwd);
+    string OpPwd = InitPwd;
+    cout << CrackSafeDfs(K,N,Visited,OpPwd) << endl;
+    cout << OpPwd << endl;
+    */
+    
     return 0;
+}
+
+bool CrackSafeDfs(const int &K, const int &N, unordered_set<string> &Visited, string &OpPwd)
+{
+    if(Visited.size() >= pow(K,N))
+        return true;
+    string PwdSubstr = OpPwd.substr(OpPwd.size()-N+1,N-1);
+    for(int i = 0; i < K; ++i)
+    {
+        string NextPwd = PwdSubstr + static_cast<char>('0'+i);
+        if(Visited.find(NextPwd) == Visited.end())
+        {
+            Visited.insert(NextPwd);
+            OpPwd.push_back(static_cast<char>('0'+i));
+            if( CrackSafeDfs(K,N,Visited,OpPwd) )
+                return true;
+            else
+            {
+                Visited.erase(NextPwd);
+                OpPwd.pop_back();
+            }
+        }
+    }
+    return false;
+}
+
+void RunDfsArray(const int idx, vector<bool> &Visited, stack<char> &TopoSortOp, const vector<char> &CharArray)
+{
+    if(idx >= Visited.size())
+        return;
+    Visited[idx] = true;
+    
+    //Goto next even index
+    if(idx % 2 == 0)
+        if(idx+2 < Visited.size() && Visited[idx+2] == false)
+            RunDfsArray(idx+2, Visited, TopoSortOp, CharArray);
+    
+    //Goto next multiple of 3 index
+    if(idx % 3 == 0)
+        if(idx+3 < Visited.size() && Visited[idx+3] == false)
+            RunDfsArray(idx+3, Visited, TopoSortOp, CharArray);
+    
+    //Since idx has no more next ngbrs, add to topological stack output
+    TopoSortOp.push(CharArray[idx]);
 }
 
 string SplitSentance(const string &inString, const unordered_set<string> &WordDict, int idx)
