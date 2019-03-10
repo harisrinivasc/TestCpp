@@ -4933,15 +4933,28 @@ int main(int argc, const char * argv[])
         }
         void put(const int key, const int value)
         {
-            if(itemHash.size() == LRU_size)
+            //check if key already exists
+            auto item_itr = itemHash.find(key);
+            if(item_itr == itemHash.end())
             {
-                //delete the last item
-                auto itr = itemList.back();
-                itemHash.erase(itr.first);
-                itemList.pop_back();
+                //check if cache is full. if so, delete the last used item (tail node)
+                if(itemHash.size() == LRU_size)
+                {
+                    //delete the last item
+                    auto itr = itemList.back();
+                    itemHash.erase(itr.first);
+                    itemList.pop_back();
+                }
+                
+                itemList.push_front(make_pair(key, value));
+                itemHash.insert(make_pair(key, itemList.begin()));
             }
-            itemList.push_front(make_pair(key, value));
-            itemHash.insert(make_pair(key, itemList.begin()));
+            else
+            {
+                //key already exists. move to head of the list and update to new value
+                item_itr->second->second = value;
+                itemList.splice(itemList.begin(), itemList, item_itr->second);
+            }
         }
     };
     
@@ -4953,6 +4966,7 @@ int main(int argc, const char * argv[])
     tempCache.put(3, 6);
     cout << tempCache.get(2) << endl;
     tempCache.put(4, 7);
+    tempCache.put(2, 8);
     */
     
     return 0;
