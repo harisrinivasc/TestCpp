@@ -509,6 +509,36 @@ int FindKthElemToDelete(const int N, const int K);
 string SplitSentance(const string &inString, const unordered_set<string> &WordDict, int idx);
 void RunDfsArray(const int idx, vector<bool> &Visited, stack<char> &TopoSortOp, const vector<char> &CharArray);
 bool CrackSafeDfs(const int &K, const int &N, unordered_set<string> &Visited, string &OpPwd);
+int GetNumberOfDigits(int A);
+bool MyCompSortForDcp228(const int A, const int B);
+int CntNumAttempsEggs(const int numEggs, const int numFloors, unordered_map<string,int> &MemoEgg);
+void FindAllKeypadComb(const int idx, const string &InNum, const vector<string> &NumAlphTable, vector<string> &KeypadOp, string &TempStr);
+
+class TempCl;
+class TempCl
+{
+private:
+    int x;
+public:
+    TempCl() : x(9)
+    {
+        cout << "Class constructed!" << endl;
+    }
+    ~TempCl()
+    {
+        cout << "Class destroyed!" << endl;
+    }
+    TempCl(const TempCl &other)
+    {
+        x = other.x;
+        cout << "Class copied " << x << endl;
+    }
+};
+TempCl CreateClass(void)
+{
+    TempCl *ptr = new TempCl;
+    return *ptr;
+}
 
 class TrieType;
 class TrieType : public enable_shared_from_this<TrieType>
@@ -4703,7 +4733,316 @@ int main(int argc, const char * argv[])
     cout << OpPwd << endl;
     */
     
+    /*
+    //DCP228
+    //Given a list of numbers, create an algorithm that arranges them in order to form the largest possible integer. For example, given [10, 7, 76, 415], you should return 77641510.
+    vector<int> InputVec = {0,0,0,0};
+    sort(InputVec.begin(), InputVec.end(), MyCompSortForDcp228);
+    
+    long long int CombineOp = 0;
+    int numDigits = 0, numZero = 0;
+    for(auto i = InputVec.crbegin(); i != InputVec.crend(); ++i)
+    {
+        if(*i == 0)
+            ++numZero;
+        CombineOp += (*i * pow(10,numDigits));
+        numDigits += GetNumberOfDigits(*i);
+    }
+    CombineOp *= pow(10,numZero);
+    cout << CombineOp << endl;
+    */
+    
+    /*
+    //DCP229 - Snakes and Ladders is a game played on a 10 x 10 board, the goal of which is get from square 1 to square 100. On each turn players will roll a six-sided die and move forward a number of spaces equal to the result. If they land on a square that represents a snake or ladder, they will be transported ahead or behind, respectively, to a new square.
+    //Find the smallest number of turns it takes to play snakes and ladders.
+    //For convenience, here are the squares representing snakes and ladders, and their outcomes:
+    const unordered_map<int,int> snakes = {make_pair(16,6), make_pair(48,26), make_pair(49,11), make_pair(56,53), make_pair(62,19),
+        make_pair(64,60), make_pair(87,24), make_pair(93,73), make_pair(95,75), make_pair(98,78)};
+    const unordered_map<int,int> ladders = {make_pair(1,38), make_pair(4,14), make_pair(9,31), make_pair(21,42), make_pair(28,84),
+        make_pair(36,44), make_pair(51,67), make_pair(71,91), make_pair(80,100)};
+    const int SNL_SIZE = 100;
+    vector<bool> snlVisited (SNL_SIZE,false);
+    queue<pair<int,int>> snlQ; //1st int indicates the current square position, 2nd int indicates the number of die rolls to get there
+    snlQ.push(make_pair(0, 0));
+    cout << "push Q 0 0" << endl;
+    
+    while(!snlQ.empty())
+    {
+        auto curr = snlQ.front();
+        snlQ.pop();
+        snlVisited[curr.first] = true;
+        cout << "pop Q " << curr.first << " " << curr.second << endl;
+        
+        if(curr.first == SNL_SIZE-1)
+        {
+            cout << "Game over in " << curr.second << " steps!!!" << endl;
+            break;
+        }
+        
+        //if curr square is a snake, goto the new square without increasing the 'die roll' cnt
+        auto isSnake = snakes.find(curr.first);
+        if(isSnake != snakes.end())
+        {
+            pair<int,int> next = make_pair(isSnake->second, curr.second);
+            if(!snlVisited[next.first])
+            {
+                snlVisited[next.first] = true;
+                cout << "push Q " << next.first << " " << next.second << endl;
+                snlQ.push(next);
+            }
+            continue;
+        }
+        
+        //if curr square is a ladder, goto the new square without increasing the 'die roll' cnt
+        auto isLadder = ladders.find(curr.first);
+        if(isLadder != ladders.end())
+        {
+            pair<int,int> next = make_pair(isLadder->second, curr.second);
+            if(!snlVisited[next.first])
+            {
+                snlVisited[next.first] = true;
+                cout << "push Q " << next.first << " " << next.second << endl;
+                snlQ.push(next);
+            }
+            continue;
+        }
+    
+        //at this point, current square neither has a snake or a ladder. Increment the die roll cnt and add to Queue
+        for(int i = 1; i <= 6; ++i)
+        {
+            pair<int,int> next = make_pair(curr.first + i, curr.second + 1);
+            if(next.first < SNL_SIZE && !snlVisited[next.first])
+            {
+                snlVisited[next.first] = true;
+                cout << "push Q " << next.first << " " << next.second << endl;
+                snlQ.push(next);
+            }
+        }
+    }
+    */
+    
+    /*
+    //test code for copy constructor
+    TempCl test_class = CreateClass();
+    */
+    
+    /*
+    //DCp230 - You are given N identical eggs and access to a building with k floors. Your task is to find the lowest floor that will cause an egg to break, if dropped from that floor. Once an egg breaks, it cannot be dropped again. If an egg breaks when dropped from the xth floor, you can assume it will also break when dropped from any floor greater than x.
+    //Write an algorithm that finds the minimum number of trial drops it will take, in the worst case, to identify this floor.
+    //For example, if N = 1 and k = 5, we will need to try dropping the egg at every floor, beginning with the first, until we reach the fifth floor, so our solution will be 5.
+    const int NUM_EGGS = 3;
+    const int NUM_FLOORS = 100;
+    unordered_map<string,int> MemoEgg;
+    cout << CntNumAttempsEggs(NUM_EGGS, NUM_FLOORS, MemoEgg) << endl;
+    */
+    
+    /*
+    //Permute all combinations of a number pad (keypad / key pad)
+    //Compute All Mnemonics For A Phone Number
+    const string InNum = "7149162206";
+    const vector<string> NumAlphTable = {"", "", "ABC", "DEF", "GHI", "JKL", "MNO", "PQRS", "TUV", "WXYZ"};
+    vector<string> KeypadOp;
+    KeypadOp.reserve(pow(4,InNum.size())); //max will be 4 options per digit and number of digits
+    string Tempstr;
+    Tempstr.reserve(InNum.size());
+    
+    FindAllKeypadComb(0, InNum, NumAlphTable, KeypadOp, Tempstr);
+    
+    for(const auto &i:KeypadOp)
+        cout << i << endl;
+    */
+    
+    /*
+    //dutch national flag (DNF) problem - sort array of 0s, 1s, and 2s
+    vector<int> DNF_in = {0,1,0,2,0,2,1,2,0,0,1,2,2,1,1,0,2,0};
+    
+    //forward pass - chose value '1' as pivot and move all 0s to left of the array, before 1
+    //find 1st location which is >= 1
+    int placement_idx0 = 0;
+    int PIVOT_VAL = 1;
+    while(DNF_in[placement_idx0] < PIVOT_VAL && placement_idx0 < DNF_in.size())
+        ++placement_idx0;
+    
+    //find location which is < pivot, and swap with placement index
+    int next_idx = placement_idx0+1;
+    while(next_idx < DNF_in.size())
+    {
+        if(DNF_in[next_idx] < PIVOT_VAL)
+        {
+            int temp = DNF_in[next_idx];
+            DNF_in[next_idx] = DNF_in[placement_idx0];
+            DNF_in[placement_idx0] = temp;
+            ++placement_idx0;
+        }
+        ++next_idx;
+    }
+    
+    //backward pass - chose value '1' as pivot and move all 2s to right of the array, after 1
+    //do this from the end of the array until placement_idx (elements < placement idx) are 0
+    int placement_idx2 = DNF_in.size()-1;
+    placement_idx0 %= DNF_in.size();
+    while(DNF_in[placement_idx2] > PIVOT_VAL && placement_idx2 >= placement_idx0)
+        --placement_idx2;
+    
+    //find location which is > pivot, and swap with placement index
+    next_idx = placement_idx2-1;
+    while(next_idx >= 0)
+    {
+        if(DNF_in[next_idx] > PIVOT_VAL)
+        {
+            int temp = DNF_in[next_idx];
+            DNF_in[next_idx] = DNF_in[placement_idx2];
+            DNF_in[placement_idx2] = temp;
+            --placement_idx2;
+        }
+        --next_idx;
+    }
+    
+    for(const auto &i:DNF_in)
+        cout << i << " ";
+    cout << endl;
+    */
+    
+    /*
+    //LRU cache - least recently used
+    class LRUcache
+    {
+    private:
+        list<pair<int,int>> itemList; //list that stores the key value pair
+        unordered_map<int,list<pair<int,int>>::iterator> itemHash; //hash table that has the iterator (address) from the list of each keys
+        const int LRU_size;
+    public:
+        LRUcache(const int size) : LRU_size(size)
+        {
+            itemHash.reserve(size);
+        }
+        int get(const int key)
+        {
+            if(itemHash.empty())
+                return INT_MIN;
+            
+            auto item_itr = itemHash.find(key);
+            if(item_itr == itemHash.end())
+                return INT_MIN;
+            
+            //move the item in the list to the head
+            //note: important!!!! - iterator is an address to the node. Moving/splicing the list does not change the iterator
+            itemList.splice(itemList.begin(), itemList, item_itr->second);
+            
+            return itemList.front().second;
+        }
+        void put(const int key, const int value)
+        {
+            if(itemHash.size() == LRU_size)
+            {
+                //delete the last item
+                auto itr = itemList.back();
+                itemHash.erase(itr.first);
+                itemList.pop_back();
+            }
+            itemList.push_front(make_pair(key, value));
+            itemHash.insert(make_pair(key, itemList.begin()));
+        }
+    };
+    
+    LRUcache tempCache(3);
+    cout << tempCache.get(3) << endl;
+    
+    tempCache.put(1, 4);
+    tempCache.put(2, 5);
+    tempCache.put(3, 6);
+    cout << tempCache.get(2) << endl;
+    tempCache.put(4, 7);
+    */
+    
     return 0;
+}
+
+void FindAllKeypadComb(const int idx, const string &InNum, const vector<string> &NumAlphTable, vector<string> &KeypadOp, string &TempStr)
+{
+    if(idx >= InNum.size())
+    {
+        KeypadOp.emplace_back(TempStr);
+        return;
+    }
+    
+    //If the digit is 0 or 1, then proceed to the next index
+    if('0' == InNum[idx] || '1' == InNum[idx])
+        FindAllKeypadComb(idx+1, InNum, NumAlphTable, KeypadOp, TempStr);
+    
+    for(int i = 0; i < NumAlphTable[InNum[idx]-'0'].size(); ++i)
+    {
+        TempStr.push_back(NumAlphTable[InNum[idx]-'0'][i]);
+        FindAllKeypadComb(idx+1, InNum, NumAlphTable, KeypadOp, TempStr);
+        TempStr.pop_back();
+    }
+}
+
+int CntNumAttempsEggs(const int numEggs, const int numFloors, unordered_map<string,int> &MemoEgg)
+{
+    if(numEggs == 1)
+        return numFloors;
+    if(numFloors <= 1)
+        return numFloors;
+    
+    string key = to_string(numEggs) + ":" + to_string(numFloors);
+    if(MemoEgg.find(key) != MemoEgg.end())
+        return MemoEgg[key];
+ 
+    int ret = INT_MAX, temp;
+    for(int i = 1; i <= numFloors; ++i)
+    {
+        temp = max(CntNumAttempsEggs(numEggs-1, i-1, MemoEgg),
+                   CntNumAttempsEggs(numEggs, numFloors-i, MemoEgg));
+        ret = min(ret, temp);
+    }
+    
+    MemoEgg.insert(make_pair(key, ret+1));
+    
+    return ret+1;
+}
+
+int GetNumberOfDigits(int A)
+{
+    int num = 0;
+    while(A)
+    {
+        A /= 10;
+        ++num;
+    }
+    return num;
+}
+
+bool MyCompSortForDcp228(int A, int B)
+{
+    int Adigit = 0, Bdigit = 0;
+    int Anumdigits = GetNumberOfDigits(A), Bnumdigits = GetNumberOfDigits(B);
+    while(Anumdigits && Bnumdigits)
+    {
+        --Anumdigits;
+        --Bnumdigits;
+        Adigit = A / pow(10,Anumdigits);
+        Bdigit = B / pow(10,Bnumdigits);
+        A -= (Adigit * pow(10,Anumdigits));
+        B -= (Bdigit * pow(10,Bnumdigits));
+        if(Adigit != Bdigit)
+            return (Bdigit < Adigit);
+    }
+    
+    if(Anumdigits == Bnumdigits)
+        return true; //this doesnt matter as at this point, both A and B will be the same
+    
+    if(Anumdigits > Bnumdigits)
+    {
+        //A has more digits and larger than B. Compare the next digit of A with previous digit of B
+        Adigit = A / pow(10,Anumdigits-1);
+    }
+    else
+    {
+        //B has more digits and larger than A. Compare the next digit of B with previous digit of A
+        Bdigit = B / pow(10,Bnumdigits-1);
+    }
+    return (Adigit >= Bdigit ? true : false);
 }
 
 bool CrackSafeDfs(const int &K, const int &N, unordered_set<string> &Visited, string &OpPwd)
