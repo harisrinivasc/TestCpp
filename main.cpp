@@ -513,6 +513,8 @@ int GetNumberOfDigits(int A);
 bool MyCompSortForDcp228(const int A, const int B);
 int CntNumAttempsEggs(const int numEggs, const int numFloors, unordered_map<string,int> &MemoEgg);
 void FindAllKeypadComb(const int idx, const string &InNum, const vector<string> &NumAlphTable, vector<string> &KeypadOp, string &TempStr);
+bool RearrangeRepeatChar(list<char> &CharList, string &OpStr);
+void FindDecodeNumWays(const int Num, int &NumWays);
 
 class TempCl;
 class TempCl
@@ -996,7 +998,7 @@ int main(int argc, const char * argv[])
      else
      {
         for(auto i = ivec.begin(); i != ivec.end(); ++i)
-        fout << *i << endl;
+            fout << *i << endl;
      }
      fout.close();
      */
@@ -4969,7 +4971,200 @@ int main(int argc, const char * argv[])
     tempCache.put(2, 8);
     */
     
+    /*
+    //test lambda functions
+    const vector<int> testVec = {1,2,3,4,5};
+    vector<int> mul2Vec;
+    for_each(testVec.cbegin(), testVec.cend(), [](int v){cout << v << endl;});
+    transform(testVec.cbegin(), testVec.cend(), back_inserter(mul2Vec), [](int v){return v<<1;});
+    for_each(mul2Vec.cbegin(), mul2Vec.cend(), [](int v){cout << v << endl;});
+    */
+    
+    /*
+    //test lower and upped_bound
+    vector<int> testVec = {1,1,2,3,3,3,4,5,5,0,8};
+    #define MY_SORT_COMP [](const int a, const int b){return a<b;}
+    
+    //sort and print output
+    sort(testVec.begin(), testVec.end(), MY_SORT_COMP);
+    for_each(testVec.cbegin(), testVec.cend(), [](int v){cout << v << endl;});
+    
+    auto itr1 = lower_bound(testVec.cbegin(), testVec.cend(), 3, MY_SORT_COMP);
+    cout << "lower idx " << itr1-testVec.cbegin() << endl;
+    
+    auto itr2 = upper_bound(testVec.cbegin(), testVec.cend(), 3, MY_SORT_COMP);
+    cout << "upper idx " << itr2-testVec.cbegin() << endl;
+    
+    cout << "binary search " << binary_search(testVec.cbegin(), testVec.cend(), 8, MY_SORT_COMP) << endl;
+    
+    //find total occureneces of an element 'k' in a sorted array
+    const int k = 0;
+    auto itr3 = lower_bound(testVec.cbegin(), testVec.cend(), k, MY_SORT_COMP);
+    auto itr4 = upper_bound(testVec.cbegin(), testVec.cend(), k, MY_SORT_COMP);
+    cout << "total occurences " << itr4-itr3 << endl;
+    
+    //equal range
+    auto itr5 = equal_range(testVec.cbegin(), testVec.cend(), -1, MY_SORT_COMP);
+    for(auto i = itr5.first; i != itr5.second; ++i)
+        cout << *i << endl;
+    */
+    
+    /*
+    //DCP231 - Given a string with repeated characters, rearrange the string so that no two adjacent characters are the same. If this is not possible, return None.
+    //For example, given "aaabbc", you could return "ababac". Given "aaab", return None.
+    const string RepeatChar = "abcc";
+    list<char> CharList (RepeatChar.cbegin(), RepeatChar.cend());
+    string OpStr;
+    OpStr.reserve(RepeatChar.size());
+    cout << RearrangeRepeatChar(CharList, OpStr) << " ";
+    cout << OpStr << endl;
+    */
+    
+    /*
+    //DCP231 - Given a string with repeated characters, rearrange the string so that no two adjacent characters are the same. If this is not possible, return None.
+    //For example, given "aaabbc", you could return "ababac". Given "aaab", return None.
+    //using pq
+    const string RepeatChar = "aaab";
+    unordered_map<char,int> CharCnt; //256 ascii characters
+    for(const auto & i : RepeatChar)
+        ++CharCnt[i];
+#define PQ_REARRANGE pair<int,char>
+    class PQ_REARRANGE_COMP
+    {
+    public:
+        bool operator()(const PQ_REARRANGE a, const PQ_REARRANGE b)
+        {
+            return a.first < b.first;
+        }
+    };
+    priority_queue<PQ_REARRANGE, vector<PQ_REARRANGE>, PQ_REARRANGE_COMP> RearrangePQ;
+    for(const auto & i : CharCnt)
+        RearrangePQ.push(make_pair(i.second, i.first));
+    
+    string OpStr;
+    OpStr.reserve(RepeatChar.size());
+    while(!RearrangePQ.empty())
+    {
+        //greedy algm - push the most frequent element from the PQ and remove it
+        auto PQ_top = RearrangePQ.top();
+        RearrangePQ.pop();
+        
+        if(OpStr.empty() || OpStr.back() != PQ_top.second)
+        {
+            OpStr.push_back(PQ_top.second);
+            --PQ_top.first;
+        }
+        else
+        {
+            //put the next character and then add it back to Q
+            if(RearrangePQ.empty())
+                break;
+            
+            auto PQ_2ndtop = RearrangePQ.top();
+            RearrangePQ.pop();
+            OpStr.push_back(PQ_2ndtop.second);
+            --PQ_2ndtop.first;
+            if(PQ_2ndtop.first)
+                RearrangePQ.push(PQ_top);
+        }
+        
+        //if the 1st top element is > 0, add it back to Q
+        if(PQ_top.first)
+            RearrangePQ.push(PQ_top);
+    }
+    
+    if(OpStr.size() == RepeatChar.size())
+        cout << "sucess!! " << OpStr << endl;
+    else
+        cout << "cannot rearrange " << OpStr << endl;
+    */
+    
+    //DCP219 - connect 4 game - Connect 4 is a game where opponents take turns dropping red or black discs into a 7 x 6 vertically suspended grid. The game ends either when one player creates a line of four consecutive discs of their color (horizontally, vertically, or diagonally), or when there are no more spots left in the grid.
+    //array 7x6; 0 - empty slot, 1 - red, 2 - yellow
+    
+    /*
+    //Total ways to decode a number/string. For example, 112 can be AAB, KB, AL (A = 1, B = 2, ..., Z = 26)
+    const int DecodeNum = 1126;
+    int ans = 0;
+    FindDecodeNumWays(DecodeNum, ans);
+    cout << ans << endl;
+    */
+    
     return 0;
+}
+
+void FindDecodeNumWays(const int Num, int &NumWays)
+{
+    if(0 == Num)
+        return;
+    
+    int curr_plus_next_digit = Num % 100;
+    if(curr_plus_next_digit > 0 && curr_plus_next_digit <= 9)
+    {
+        ++NumWays;
+        FindDecodeNumWays(Num/10, NumWays);
+    }
+    else if(curr_plus_next_digit > 9 && curr_plus_next_digit <= 26)
+    {
+        NumWays += 2;
+        FindDecodeNumWays(Num/100, NumWays);
+    }
+    else
+        FindDecodeNumWays(Num/10, NumWays);
+}
+
+#if 0
+    //2 options - include just last digit or last digit + next digit
+    int curr_digit, ret1 = INT_MIN;
+    curr_digit = Num % 10;
+    ret1 = FindDecodeNumWays(Num/10);
+    
+    int curr_plus_next_digit = INT_MAX, ret2 = INT_MIN;
+    if(Num >= 10)
+    {
+        curr_plus_next_digit = Num % 100;
+        if(curr_plus_next_digit <= 26)
+            ret2 = FindDecodeNumWays(Num/100);
+    }
+    
+    if(curr_plus_next_digit > 9 && curr_plus_next_digit <= 26 )
+        return (max(ret1,ret2) + 2);
+    else if (curr_plus_next_digit > 26)
+        return (max(ret1,ret2));
+    else
+        return (max(ret1,ret2) + 1);
+}
+#endif
+
+bool RearrangeRepeatChar(list<char> &CharList, string &OpStr)
+{
+    if(CharList.empty())
+        return true;
+    
+    auto size = CharList.size();
+    
+    //repeat (find different options) for all elements of the list
+    for(auto i = 0; i < size; ++i)
+    {
+        //store the first element of the list and remove it from the list.
+        //add it back to the end of the list at the end of recursion
+        auto front_item = CharList.front();
+        CharList.pop_front();
+        
+        if(OpStr.empty() || OpStr.back() != front_item)
+        {
+            OpStr.push_back(front_item);
+            if(RearrangeRepeatChar(CharList, OpStr))
+                return true;
+        }
+        
+        //add the popped item at the back of the list
+        CharList.push_back(front_item);
+    }
+    
+    //pop last output char as this combination does not work
+    OpStr.pop_back();
+    return false;
 }
 
 void FindAllKeypadComb(const int idx, const string &InNum, const vector<string> &NumAlphTable, vector<string> &KeypadOp, string &TempStr)
