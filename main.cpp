@@ -515,6 +515,9 @@ int CntNumAttempsEggs(const int numEggs, const int numFloors, unordered_map<stri
 void FindAllKeypadComb(const int idx, const string &InNum, const vector<string> &NumAlphTable, vector<string> &KeypadOp, string &TempStr);
 bool RearrangeRepeatChar(list<char> &CharList, string &OpStr);
 void FindDecodeNumWays(const int Num, int &NumWays);
+int FindQuotient(const int dividend, const int divisor);
+int EarliestReachableStep(const vector<int> &MaxReach, const int low, const int high, const int find_idx);
+bool MyStringSortComp(const char &A, const char &B);
 
 class TempCl;
 class TempCl
@@ -3012,6 +3015,9 @@ int main(int argc, const char * argv[])
     
     /*
     //Overlapping intervals (DCP77)
+     //Given a list of possibly overlapping intervals, return a new list of intervals where all overlapping intervals have been merged.
+     //The input list is not necessarily ordered in any way.
+     //For example, given [(1, 3), (5, 8), (4, 10), (20, 25)], you should return [(1, 3), (4, 10), (20, 25)].
     vector<pair<int,int>> Intervals {make_pair(1, 3), make_pair(5, 8), make_pair(4, 10), make_pair(20, 25), make_pair(1,10)};
     vector<pair<int,int>> OutputIntervals;
     //Sort the input based on start times (first element in pair)
@@ -5090,7 +5096,322 @@ int main(int argc, const char * argv[])
     cout << ans << endl;
     */
     
+    /*
+    //Structure zero padding
+    struct test {
+        char a;
+        long long int x;
+        char b;
+    };
+    cout << sizeof(test) << endl;
+     */
+    
+    /*
+    //Convert 2 integers (int and frac portion) into binary format (IEEE 754)
+    //1 bit for sign
+    //8 bits for exponent (scaled/biased by 2^127)
+    //23 bits of mantissa
+    const int int_val = 48;
+    const int frac_val = 4501; //read as 0.4501
+    vector<int> Int_binary, Frac_binary;
+    
+    //convert integer to binary - keep dividing by 2 until quotient is 0. For every division, the remainder will
+    //be the binary representation
+    int temp = int_val;
+    while(temp)
+    {
+        Int_binary.push_back(temp % 2);
+        temp /= 2;
+    }
+    reverse(Int_binary.begin(), Int_binary.end());
+    
+    //convert fractional portion - keep multiplying by 2 (for N precision bits). Everytime the result is >= 1, subtract 1
+    //and continue multiplying by 2 for N times. The integer portion of the multiplied output (0 or 1) will be the binary
+    //representation
+    temp = frac_val;
+    int NumFracDigits = floor(log10(frac_val)) + 1;
+    int ThreshGreaterThan1 = pow(10,NumFracDigits);
+    int BinaryPrecisionBits = 31;
+    for(int i = 0; i < BinaryPrecisionBits; ++i)
+    {
+        temp <<= 1;
+        if(temp >= ThreshGreaterThan1)
+        {
+            Frac_binary.push_back(1);
+            temp -= ThreshGreaterThan1;
+        }
+        else
+            Frac_binary.push_back(0);
+    }
+    
+    for(const auto &i:Int_binary)
+        cout << i;
+    cout << ".";
+    for(const auto &i:Frac_binary)
+        cout << i;
+    cout << endl;
+    
+    int sign = 0;
+    int exponent = 127 + Int_binary.size()-1; //move the decimal point to the left (multiply by 2^num of bits moved)
+    int mantissa; // mantissa will be the remaining bits of Int_binary (except the MSB) + all the bits of Frac_binary and cut to a length of 23 
+    */
+    
+    /*
+    //EPI - 4.6 - find quotient without using arithmetic operations
+    const int dividend = 8768764, divisor = 1;
+    cout << FindQuotient(dividend, divisor) << endl;
+    */
+    
+    /*
+    //LIS - longest increasing subsequence - O(nlogn) solution
+    const vector<int> LisInput = {0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15};
+    vector<int> EndElem (LisInput.size(), INT_MAX);
+    int temp_index;
+    for(const auto &i:LisInput)
+    {
+        //find the earliest index where the new element 'i' can be placed (this is the end element)
+        temp_index = lower_bound(EndElem.cbegin(), EndElem.cend(), i) - EndElem.cbegin();
+        EndElem[temp_index] = i;
+    }
+    cout << lower_bound(EndElem.cbegin(), EndElem.cend(), INT_MAX) - EndElem.cbegin() << endl;
+    
+    //print the elements
+    for(const auto &i:EndElem)
+        if(i != INT_MAX)
+            cout << i << " ";
+        else
+            break;
+    cout << endl;
+    */
+    
+    /*
+    //DCP241 - In academia, the h-index is a metric used to calculate the impact of a researcher's papers. It is calculated as follows:
+    //A researcher has index h if at least h of her N papers have h citations each. If there are multiple h satisfying this formula, the maximum is chosen.
+    //For example, suppose N = 5, and the respective citations of each paper are [4, 3, 0, 1, 5]. Then the h-index would be 3, since the researcher has 3 papers with at least 3 citations.
+    //Given a list of paper citations of a researcher, calculate their h-index.
+    vector<int> HidxInput = {1,4,1,4,2,1,3,5,6};//{4, 3, 0, 1, 5};
+    sort(HidxInput.begin(), HidxInput.end());
+    int hidx = 0;
+    for(int i = HidxInput.size()-1; i >= 0; --i)
+    {
+        if(HidxInput.size() - i >= HidxInput[i])
+        {
+            hidx = HidxInput.size() - i;
+            break;
+        }
+    }
+    cout << hidx << endl;
+    */
+    
+    /*
+    //DCP245 - You are given an array of integers, where each element represents the maximum number of steps that can be jumped going forward from that element. Write a function to return the minimum number of jumps you must take in order to get from the start to the end of the array.
+    //For example, given [6, 2, 4, 0, 5, 1, 1, 4, 2, 9], you should return 2, as the optimal solution involves jumping from 6 to 5, and then from 5 to 9.
+    const vector<int> StepsIn = {6, 2, 4, 0, 1, 1, 1, 4, 2, 9};
+    vector<int> MaxReach (StepsIn.size(), 0);
+    for(int i = 0; i < StepsIn.size(); ++i)
+        MaxReach[i] = i + StepsIn[i];
+    
+    int StepsCounter = 1;
+    int temp = EarliestReachableStep(MaxReach, 0, MaxReach.size()-1, MaxReach.size()-1);
+    while((temp != 0) && (temp != INT_MAX))
+    {
+        ++StepsCounter;
+        cout << temp << " ";
+        temp = EarliestReachableStep(MaxReach, 0, temp, temp);
+    }
+    if(temp == INT_MAX)
+        cout << "\ncannot reach end" << endl;
+    else
+        cout << "\n" << StepsCounter << endl;
+    */
+    
+    /*
+    //DCP246 - Given a list of words, determine whether the words can be chained to form a circle. A word X can be placed in front of another word Y in a circle if the last character of X is same as the first character of Y.
+    //For example, the words ['chair', 'height', 'racket', touch', 'tunic'] can form the following circle: chair --> racket --> touch --> height --> tunic --> chair.
+    const vector<string> ChainWords = {"chair", "height", "racket", "touch", "tunic"};
+    stack<pair<string,int>> WordStack;
+    vector<bool> Visited (ChainWords.size(), false);
+    vector<int> Indegree (ChainWords.size(), 0);
+    vector<int> Outdegree (ChainWords.size(), 0);
+    
+    WordStack.push(make_pair(ChainWords[0], 0));
+    string curr_word;
+    int curr_idx;
+    
+    while(!WordStack.empty())
+    {
+        curr_word = WordStack.top().first;
+        curr_idx = WordStack.top().second;
+        WordStack.pop();
+        Visited[curr_idx] = true;
+        
+        for(int i = 0; i < ChainWords.size(); ++i)
+        {
+            if( (i != curr_idx) && (curr_word.back() == ChainWords[i].front()) )
+            {
+                ++Outdegree[curr_idx];
+                ++Indegree[i];
+                if(!Visited[i])
+                {
+                    WordStack.push(make_pair(ChainWords[i], i));
+                }
+            }
+        }
+    }
+    */
+    
+    /*
+    //DCP248 - Find the maximum of two numbers without using any if-else statements, branching, or direct comparisons.
+    const int x=-100, y=-100;
+    cout << (x^(x^y)&((x-y)>>31)) << endl;
+    */
+    
+    /*
+    //test smart pointer destructor
+    class A;
+    class A
+    {
+        int x;
+        shared_ptr<A> next;
+    public:
+        A() : x(0), next(nullptr)
+        {
+            cout << "default ctor " << endl;
+        }
+        A(const int y) : x(y), next(nullptr)
+        {
+            cout << "value ctor " << x << endl;
+        }
+        ~A()
+        {
+            //next = nullptr;
+            cout << "dtor " << x << endl;
+        }
+        shared_ptr<A>& GetNext(void)
+        {
+            return next;
+        }
+    };
+    shared_ptr<A> Aptr = make_shared<A>();//, Bptr = make_shared<A>(2);
+    Aptr->GetNext() = make_shared<A>(2);
+    Aptr = nullptr;
+    cout << "terminating program" << endl;
+    */
+    
+    /*
+    //Given two strings - S1 and S2.
+    //Arrange the characters of S1 in same alphabetical order as the characters of S2.
+    //If a character of S1 is not present in S2 - such characters should come at the end of the result string, but make sure to retain the order of such characters
+    //Case sensitivity is irrelevant
+    //e.g. S1 = "Google", S2 = "dog"
+    //Output = "ooggle"
+    
+    //e.g. S1 = "abcdedadf", S2 = "cae"
+    //Output = "caaebdddf"
+    string S1 = "abcdedadf";
+    sort(S1.begin(), S1.end(), MyStringSortComp);
+    cout << S1 << endl;
+    */
+    
+    /*
+    //Radix sort - similar to counting sort (or LSD sort for strings)
+    vector<int> In = {45,90,34,135,2,0,1,45,56,29,21,39,93,2980,1043};
+    const int BaseDigit = 10;
+    int MaxNum = INT_MIN;
+    for(const auto &i : In)
+        MaxNum = max(MaxNum,i);
+    const int MaxDigits = log10(MaxNum)+1;
+    vector<int> AuxArray (In.size(),0);
+    for(int i = 0; i < MaxDigits; ++i)
+    {
+        vector<int> Cnt (BaseDigit+1,0);
+        int currdigit;
+        
+        //cnt the number of numbers with the same digit
+        for(int j = 0; j < In.size(); ++j)
+        {
+            currdigit = static_cast<int>(In[j]/pow(BaseDigit,i)) % BaseDigit;
+            ++Cnt[currdigit+1];
+        }
+        
+        //update the cnt array to get the array index for aux vector
+        for(int j = 1; j < Cnt.size(); ++j)
+            Cnt[j] += Cnt[j-1];
+        
+        //copy data into aux array based
+        for(int j = 0; j < In.size(); ++j)
+        {
+            currdigit = static_cast<int>(In[j]/pow(BaseDigit,i)) % BaseDigit;
+            AuxArray[ Cnt[currdigit]++ ] = In[j];
+        }
+        
+        //copy data back into input array
+        for(int j = 0; j < AuxArray.size(); ++j)
+            In[j] = AuxArray[j];
+    }
+    
+    //print sorted data
+    for(const auto &i : In)
+        cout << i << " ";
+    cout << endl;
+    */
+    
+    /*
+    //generate gray code - can be used to implement towers of hanoi
+    const int Nbits = 3;
+    vector<int> graycode (pow(2,Nbits),0);
+    for(int i = 1; i <= Nbits; ++i)
+    {
+        int offset = pow(2,i-1);
+        for(int j = 0; j < offset; ++j)
+            graycode[offset+j] = offset + graycode[offset-j-1];
+    }
+    
+    for(const auto &i:graycode)
+        cout << bitset<Nbits>(i) << endl;
+    */
+    
     return 0;
+}
+
+bool MyStringSortComp(const char &A, const char &B)
+{
+    const string S2 = "cae";
+    unordered_map<char, int> sortmap;
+    for(int i = 0; i < S2.size(); ++i)
+        sortmap.insert(make_pair(S2[i], i));
+    
+    int Aidx = INT_MAX, Bidx = INT_MAX;
+    if(sortmap.find(A) != sortmap.end())
+        Aidx = sortmap[A];
+    if(sortmap.find(B) != sortmap.end())
+        Bidx = sortmap[B];
+    return(Aidx < Bidx);
+}
+
+int EarliestReachableStep(const vector<int> &MaxReach, const int low, const int high, const int find_idx)
+{
+    for(int i = low; i <= high; ++i)
+        if(MaxReach[i] >= find_idx)
+            return i;
+    return INT_MAX;
+}
+
+int FindQuotient(const int dividend, const int divisor)
+{
+    if(dividend < divisor)
+        return 0;
+    
+    int powerof2 = 0;
+    int divisor_pow = divisor << powerof2;
+    while(dividend >= divisor_pow)
+    {
+        ++powerof2;
+        divisor_pow <<= 1;
+    }
+    powerof2 = 1 << (powerof2-1);
+    divisor_pow >>= 1;
+    return (powerof2)+FindQuotient(dividend-divisor_pow, divisor);
 }
 
 void FindDecodeNumWays(const int Num, int &NumWays)
