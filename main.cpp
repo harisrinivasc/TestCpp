@@ -5371,6 +5371,79 @@ int main(int argc, const char * argv[])
         cout << bitset<Nbits>(i) << endl;
     */
     
+    /*
+    //leetcode 79 - Given a 2D board and a word, find if the word exists in the grid.
+    //The word can be constructed from letters of sequentially adjacent cell, where "adjacent" cells are those horizontally or vertically neighboring. The same letter cell may not be used more than once.
+    //board =
+    //[
+     //['A','B','C','E'],
+     //['S','F','C','S'],
+     //['A','D','E','E']
+     //]
+    //Given word = "ABCCED", return true.
+    //Given word = "SEE", return true.
+    //Given word = "ABCB", return false.
+    class Solution {
+    public:
+        bool exist(vector<vector<char>>& board, string word) {
+            bool found = false;
+            vector<vector<bool>> visited (board.size(), vector<bool>(board[0].size(), false));
+            
+            for(int i = 0; i < board.size(); ++i)
+            {
+                for(int j = 0; j < board[i].size(); ++j)
+                {
+                    if(WordSearchDfs(board, i, j, word, 0, visited))
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+                if(found)
+                    break;
+            }
+            return found;
+        }
+        
+        bool WordSearchDfs(const vector<vector<char>>& board, const int row, const int col, const string &word, const int word_idx, vector<vector<bool>> &visited)
+        {
+            if(word_idx >= word.size())
+                return true;
+            
+            if(board[row][col] == word[word_idx])
+            {
+                visited[row][col] = true;
+                if(row+1 < board.size() && !visited[row+1][col])
+                {
+                    if(WordSearchDfs(board, row+1, col, word, word_idx+1, visited))
+                        return true;
+                }
+                if(row-1 >= 0 && !visited[row-1][col])
+                {
+                    if(WordSearchDfs(board, row-1, col, word, word_idx+1, visited))
+                        return true;
+                }
+                if(col+1 < board[row].size() && !visited[row][col+1])
+                {
+                    if(WordSearchDfs(board, row, col+1, word, word_idx+1, visited))
+                        return true;
+                }
+                if(col-1 >= 0 && !visited[row][col-1])
+                {
+                    if(WordSearchDfs(board, row, col-1, word, word_idx+1, visited))
+                        return true;
+                }
+                
+                if(word_idx+1 >= word.size())
+                    return true;
+            }
+            
+            visited[row][col] = false;
+            return false;
+        }
+    };
+    */
+    
     return 0;
 }
 
