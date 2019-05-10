@@ -518,6 +518,8 @@ void FindDecodeNumWays(const int Num, int &NumWays);
 int FindQuotient(const int dividend, const int divisor);
 int EarliestReachableStep(const vector<int> &MaxReach, const int low, const int high, const int find_idx);
 bool MyStringSortComp(const char &A, const char &B);
+bool FixedPntArray(const vector<int> &In, const int begin, const int end);
+bool QuxRgb(list<int> &RgbIn);
 
 class TempCl;
 class TempCl
@@ -1208,7 +1210,7 @@ int main(int argc, const char * argv[])
      {
          auto ret = word_count.insert(make_pair(word,1));
          if( false == ret.second )
-         ++ret.first->second;
+            ++ret.first->second;
      }
      for (const auto &w : word_count) // for each element in the map
         // print the results
@@ -5444,7 +5446,215 @@ int main(int argc, const char * argv[])
     };
     */
     
+    /*
+    //DCP257 - Given an array of integers out of order, determine the bounds of the smallest window that must be sorted in order for the entire array to be sorted. For example, given [3, 7, 5, 6, 9], you should return (1, 3).
+    const vector<int> In = {1,2,3,4,1};
+    int leftidx = INT_MIN, rightidx = INT_MIN;
+    int leftmax = INT_MIN, rightmin = INT_MAX;
+    for(int i = 0; i < In.size(); ++i)
+    {
+        if(In[i] < leftmax)
+            rightidx = i;
+        leftmax = max(leftmax, In[i]);
+    }
+    for(int i = In.size()-1; i >= 0; --i)
+    {
+        if(In[i] > rightmin)
+            leftidx = i;
+        rightmin = min(rightmin, In[i]);
+    }
+    cout << leftidx << " " << rightidx << endl;
+    */
+    
+    /*
+    //DCP258 - In Ancient Greece, it was common to write text with the first line going left to right, the second line going right to left, and continuing to go back and forth. This style was called "boustrophedon".
+    //Given a binary tree, write an algorithm to print the nodes in boustrophedon order.
+    //For example, given the following tree:
+    //      1
+    //   /     \
+    //  2       3
+    // / \     / \
+    //4   5   6   7
+    //You should return [1, 3, 2, 4, 5, 6, 7].
+    const vector<int> BtInputInt = {1,2,3,4,6,5,7};
+    for(const auto &i : BtInputInt)
+        InsertKeyToAnyTree(i, "a");
+    PrintBst();
+    bool l_to_r = true;
+    stack<shared_ptr<BstType>> ltor_s, rtol_s;
+    ltor_s.push(BstHead);
+    shared_ptr<BstType> curr;
+    while(!ltor_s.empty() || !rtol_s.empty())
+    {
+        if(l_to_r)
+        {
+            curr = ltor_s.top();
+            ltor_s.pop();
+            cout << curr->key << " ";
+            if(curr->left)
+                rtol_s.push(curr->left);
+            if(curr->right)
+                rtol_s.push(curr->right);
+            if(ltor_s.empty())
+                l_to_r = false;
+        }
+        else
+        {
+            curr = rtol_s.top();
+            rtol_s.pop();
+            cout << curr->key << " ";
+            if(curr->right)
+                ltor_s.push(curr->right);
+            if(curr->left)
+                ltor_s.push(curr->left);
+            if(rtol_s.empty())
+                l_to_r = true;
+        }
+    }
+    cout << endl;
+    */
+    
+    /*
+    //DCP273 - A fixed point in an array is an element whose value is equal to its index. Given a sorted array of distinct elements, return a fixed point, if one exists. Otherwise, return False.
+    //For example, given [-6, 0, 2, 40], you should return 2. Given [1, 5, 7, 8], you should return False.
+    const vector<int> In = {1, 5, 7, 8};//{-6, 0, 2, 40};
+    cout << FixedPntArray(In, 0, In.size()-1) << endl;
+    */
+    
+    /*
+    //DCP282 - Given an array of integers, determine whether it contains a Pythagorean triplet. Recall that a Pythogorean triplet (a, b, c) is defined by the equation a2+ b2= c2.
+    const vector<int> In = {3,1,4,8,4,9,-9,5,2,-2};
+    unordered_multiset<int> SqSet;
+    SqSet.reserve(In.size());
+    for(auto i = In.cbegin(); i != In.cend(); ++i)
+        SqSet.insert((*i) * (*i));
+    bool TripFound = false;
+    
+    for(int i = 0; i < In.size(); ++i)
+    {
+        auto elem1 = In[i] * In[i];
+        auto itr1 = SqSet.equal_range(elem1);
+        SqSet.erase(itr1.first);
+        for(int j = i+1; j < In.size(); ++j)
+        {
+            auto elem2 = In[j] * In[j];
+            auto itr2 = SqSet.equal_range(elem2);
+            SqSet.erase(itr2.first);
+            if(SqSet.find(elem1+elem2) != SqSet.end())
+            {
+                cout << In[i] << " " << In[j] << " " << elem1+elem2 << endl;
+                TripFound = true;
+                break;
+            }
+            SqSet.insert(elem2);
+        }
+        SqSet.insert(elem1);
+        if(TripFound)
+            break;
+    }
+    cout << TripFound << endl;
+    */
+    
+    /*
+    //DCP283 - A regular number in mathematics is defined as one which evenly divides some power of 60. Equivalently, we can say that a regular number is one whose only prime divisors are 2, 3, and 5.
+    //These numbers have had many applications, from helping ancient Babylonians keep time to tuning instruments according to the diatonic scale.
+    //Given an integer N, write a program that returns, in order, the first N regular numbers.
+    const int N = 20;
+    vector<int> RegNumOp;
+    RegNumOp.reserve(N);
+    int cnt2, cnt3, cnt5;
+    cnt2 = cnt3 = cnt5 = 1;
+    RegNumOp.push_back(2*cnt2 * 3*cnt3 * 5*cnt5);
+    while(RegNumOp.size() < N)
+    {
+        int mult2 = 2*(cnt2+1) * 3*cnt3 * 5*cnt5;
+        int mult3 = 2*cnt2 * 3*(cnt3+1) * 5*cnt5;
+        int mult5 = 2*cnt2 * 3*cnt3 * 5*(cnt5+1);
+        int minnum = min(mult2, mult3);
+        minnum = min(minnum, mult5);
+        RegNumOp.push_back(minnum);
+        if(minnum == mult2)
+            ++cnt2;
+        else if(minnum == mult3)
+            ++cnt3;
+        else
+            ++cnt5;
+    }
+    for(auto i = RegNumOp.cbegin(); i != RegNumOp.cend(); ++i)
+        cout << *i << " ";
+    cout << endl;
+    */
+    
+    /*
+    //DCP290 - On a mysterious island there are creatures known as Quxes which come in three colors: red, green, and blue. One power of the Qux is that if two of them are standing next to each other, they can transform into a single creature of the third color.
+    //Given N Quxes standing in a line, determine the smallest number of them remaining after any possible sequence of such transformations.
+    //For example, given the input ['R', 'G', 'B', 'G', 'B'], it is possible to end up with a single Qux through the following steps:
+    //
+    //Arrangement       |   Change
+    //----------------------------------------
+    //['R', 'G', 'B', 'G', 'B'] | (R, G) -> B
+    //['B', 'B', 'G', 'B']      | (B, G) -> R
+    //['B', 'R', 'B']           | (R, B) -> G
+    //['B', 'G']                | (B, G) -> R
+    //['R']                     |
+    //R = 1, G = 2, B = 3
+    list<int> RgbIn = {1,1,3,2};//{1,2,3,2,3};
+    cout << QuxRgb(RgbIn) << endl;
+    */
+    
     return 0;
+}
+
+bool QuxRgb(list<int> &RgbIn)
+{
+    if(RgbIn.size() <= 1)
+        return true;
+    
+    auto curr = RgbIn.begin();
+    auto prev = curr++;
+    while(curr != RgbIn.end())
+    {
+        if(*curr != *prev)
+        {
+            //if prev and curr are different, replace them with the 3rd val and recursively call again
+            int temp_prev_val = *prev;
+            int temp_curr_val = *curr;
+            int newval = (*curr + *prev) % 4;
+            if(!newval)
+                newval = 2;
+            
+            RgbIn.erase(prev);
+            *curr = newval;
+            
+            if( QuxRgb(RgbIn) )
+                return true;
+            
+            //add the deleted values back and proceed to next index
+            *curr = temp_curr_val;
+            RgbIn.insert(curr, temp_prev_val);
+        }
+        prev = curr++;
+    }
+               
+    return false;
+}
+
+bool FixedPntArray(const vector<int> &In, const int begin, const int end)
+{
+    if (begin > end)
+        return false;
+    
+    int mid = end + begin;
+    mid >>= 1;
+    
+    if(In[begin] > static_cast<int>(In.size()) || In[end] < 0)
+        return false;
+    
+    if(In[mid] == mid)
+        return true;
+    if(In[mid] < mid)
+        return FixedPntArray(In, mid+1, end);
+    return FixedPntArray(In, begin, mid-1);
 }
 
 bool MyStringSortComp(const char &A, const char &B)
