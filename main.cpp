@@ -520,6 +520,8 @@ int EarliestReachableStep(const vector<int> &MaxReach, const int low, const int 
 bool MyStringSortComp(const char &A, const char &B);
 bool FixedPntArray(const vector<int> &In, const int begin, const int end);
 bool QuxRgb(list<int> &RgbIn);
+void CheckCustDrinksComb(int currdrink, unordered_set<int> &CustSet, vector<unordered_set<int>> &MinDrinks, const vector<vector<int>> &DrinksList, unordered_set<int> &BestDrink);
+bool MyCandSort(const pair<int,int> &A, const pair<int,int> &B);
 
 class TempCl;
 class TempCl
@@ -5602,7 +5604,237 @@ int main(int argc, const char * argv[])
     cout << QuxRgb(RgbIn) << endl;
     */
     
+    //DCP293 - You have N stones in a row, and would like to create from them a pyramid. This pyramid should be constructed such that the height of each stone increases by one until reaching the tallest stone, after which the heights decrease by one. In addition, the start and end stones of the pyramid should each be one stone high.
+    //You can change the height of any stone by paying a cost of 1 unit to lower its height by 1, as many times as necessary. Given this information, determine the lowest cost method to produce this pyramid.
+    //For example, given the stones [1, 1, 3, 3, 2, 1], the optimal solution is to pay 2 to create [0, 1, 2, 3, 2, 1].
+    
+    /*
+    //DCP292 - A teacher must divide a class of students into two teams to play dodgeball. Unfortunately, not all the kids get along, and several refuse to be put on the same team as that of their enemies.
+    //Given an adjacency list of students and their enemies, write an algorithm that finds a satisfactory pair of teams, or returns False if none exists.
+    //For example, given the following enemy graph you should return the teams {0, 1, 4, 5} and {2, 3}.
+    //students = {
+    //    0: [3],
+    //    1: [2],
+    //    2: [1, 4],
+    //    3: [0, 4, 5],
+    //    4: [2, 3],
+    //    5: [3] }
+    const vector<vector<int>> Enemy = {{3},{2},{1,4},{0,4,5},{2,3},{3}};
+    unordered_set<int> team1, team2;
+    queue<int> q1,q2;
+    vector<bool> visited (Enemy.size(), false);
+    
+    //put the 1st student in q1
+    q1.push(0);
+    
+    bool currteam1 = true;
+    int curr_stud;
+    
+    while(1)
+    {
+        if(currteam1)
+        {
+            curr_stud = q1.front();
+            q1.pop();
+        
+            visited[curr_stud] = true;
+            team1.insert(curr_stud);
+            for(int i = 0; i < Enemy[curr_stud].size(); ++i)
+            {
+                if(!visited[Enemy[curr_stud][i]])
+                    q2.push(Enemy[curr_stud][i]);
+            }
+            
+            if(q1.empty())
+                currteam1 = false;
+        }
+        else
+        {
+            curr_stud = q2.front();
+            q2.pop();
+            
+            visited[curr_stud] = true;
+            team2.insert(curr_stud);
+            for(int i = 0; i < Enemy[curr_stud].size(); ++i)
+            {
+                if(!visited[Enemy[curr_stud][i]])
+                    q1.push(Enemy[curr_stud][i]);
+            }
+            
+            if(q2.empty())
+                currteam1 = true;
+        }
+        
+        if(q1.empty() && q2.empty())
+            break;
+    }
+    
+    //check if there are any overlaps
+    for(auto i = team1.cbegin(); i != team1.end(); ++i)
+        if(team2.find( *i ) != team2.end())
+        {
+            cout << "cannot split into teams!" << *i << endl;
+        }
+    */
+    
+    /*
+    //DCP295 - Pascal's triangle is a triangular array of integers constructed with the following formula:
+    //The first row consists of the number 1.
+    //For each subsequent row, each element is the sum of the numbers directly above it, on either side.
+    //For example, here are the first few rows:
+    //    1
+    //   1 1
+    //  1 2 1
+    // 1 3 3 1
+    //1 4 6 4 1
+    //Given an input k, return the kth row of Pascal's triangle. Bonus: Can you do this using only O(k) space?
+    const int pascal_size = 5;
+    vector<int> curr, prev;
+    curr.reserve(pascal_size);
+    prev.reserve(pascal_size);
+    prev.push_back(1);
+    for(int i = 1; i < pascal_size; ++i)
+    {
+        curr.push_back(1);
+        for(int j = 1; j < prev.size(); ++j)
+            curr.push_back(prev[j] + prev[j-1]);
+        curr.push_back(1);
+        prev.clear();
+        prev = curr;
+        curr.clear();
+        
+        //debug print
+        for(auto j = prev.cbegin(); j != prev.cend(); ++j)
+            cout << *j << " ";
+        cout << endl;
+    }
+    */
+    
+    /*
+    //DCP297 - At a popular bar, each customer has a set of favorite drinks, and will happily accept any drink among this set. For example, in the following situation, customer 0 will be satisfied with drinks 0, 1, 3, or 6.
+    //preferences = {
+    //    0: [0, 1, 3, 6],
+    //    1: [1, 4, 7],
+    //    2: [2, 4, 7, 5],
+    //    3: [3, 2, 5],
+    //    4: [5, 8]
+    //}
+    //A lazy bartender working at this bar is trying to reduce his effort by limiting the drink recipes he must memorize. Given a dictionary input such as the one above, return the fewest number of drinks he must learn in order to satisfy all customers.
+    //For the input above, the answer would be 2, as drinks 1 and 5 will satisfy everyone.
+    const vector<vector<int>> CustIn = {{0,1,3,6},{1,4,7},{2,4,7,5},{3,2,5},{5,8}};
+    unordered_set<int> AllDrinks;
+    
+    for(int i = 0; i < CustIn.size(); ++i)
+        for(int j = 0; j < CustIn[i].size(); ++j)
+            AllDrinks.insert(CustIn[i][j]);
+    
+    vector<vector<int>> DrinksList;
+    const int NumDrinks = AllDrinks.size();
+    for(int i = 0; i < NumDrinks; ++i)
+        DrinksList.emplace_back(vector<int>{});
+    
+    for(int i = 0; i < CustIn.size(); ++i)
+        for(int j = 0; j < CustIn[i].size(); ++j)
+            DrinksList[ CustIn[i][j] ].push_back(i);
+    
+    unordered_set<int> AllCust;
+    unordered_set<int> BestDrink;
+    for(int i = 0; i < CustIn.size(); ++i)
+        AllCust.insert(i);
+    const int NumCust = CustIn.size();
+    
+    vector<unordered_set<int>> MinDrinks;
+    MinDrinks.emplace_back(set<int>{});
+    
+    for(int i = 0; i < NumDrinks; ++i)
+    {
+        CheckCustDrinksComb(i, AllCust, MinDrinks, DrinksList, BestDrink);
+        for(int j = 0; j < CustIn.size(); ++j)
+            AllCust.insert(i);
+    }
+    */
+    
+    /*
+    //DCP300 - On election day, a voting machine writes data in the form (voter_id, candidate_id) to a text file. Write a program that reads this file as a stream and returns the top 3 candidates at any given time. If you find a voter voting more than once, report this as fraud.
+    ifstream votingmachine("/Users/hari/C-programs/Xcode/TestCPP/TestCPP/TestCPP/vot_machine.txt");
+    
+    int voterid, candidateid;
+    unordered_set<int> voterset;
+    unordered_map<int,int> candidate_cnt;
+    while((votingmachine >> voterid) && (votingmachine >> candidateid))
+    {
+        if( !voterset.insert(voterid).second )
+        {
+            //voter has voted twice (already present in voter list)
+            cout << "error. voter already voted" << voterid << endl;
+            continue;
+        }
+        
+        candidate_cnt[candidateid]++;
+    }
+    
+    votingmachine.close();
+    
+    //select top 3 candidates
+    vector<pair<int,int>> topcandidate;
+    topcandidate.reserve(candidate_cnt.size());
+    
+    for(auto i = candidate_cnt.cbegin(); i != candidate_cnt.cend(); ++i)
+        topcandidate.push_back(make_pair((*i).first, (*i).second));
+    
+    sort(topcandidate.begin(), topcandidate.end(), MyCandSort);
+    */
+    
     return 0;
+}
+
+bool MyCandSort(const pair<int,int> &A, const pair<int,int> &B)
+{
+    return (A.second < B.second);
+}
+
+void CheckCustDrinksComb(int currdrink, unordered_set<int> &CustSet, vector<unordered_set<int>> &MinDrinks, const vector<vector<int>> &DrinksList, unordered_set<int> &BestDrink)
+{
+    unordered_set<int> RemovedCustList;
+    
+    //remove list of all customers that have this drink
+    for(int i = 0; i < DrinksList[currdrink].size(); ++i)
+        if( CustSet.erase(DrinksList[currdrink][i]) )
+        {
+            RemovedCustList.insert(DrinksList[currdrink][i]);
+            
+            //atleast one more customer is removed. add current drink to list and proceed to next combination
+            BestDrink.insert(currdrink);
+        }
+    
+    if(CustSet.empty())
+    {
+        MinDrinks.emplace_back(BestDrink);
+        
+        //add list of all customers that have this drink back to the set
+        for(auto i = RemovedCustList.cbegin(); i != RemovedCustList.cend(); ++i)
+            CustSet.insert(*i);
+        
+        //Remove this drink from list and proceed to next combination
+        BestDrink.erase(currdrink);
+        
+        return;
+    }
+    
+    //Try the remaining list of drinks
+    for(int i = currdrink+1; i < DrinksList.size(); ++i)
+    {
+        CheckCustDrinksComb(i, CustSet, MinDrinks, DrinksList, BestDrink);
+    }
+    
+    //add list of all customers that have this drink back to the set
+    for(auto i = RemovedCustList.cbegin(); i != RemovedCustList.cend(); ++i)
+    {
+        CustSet.insert(*i);
+    
+        //Remove this drink from list and proceed to next combination
+        BestDrink.erase(currdrink);
+    }
 }
 
 bool QuxRgb(list<int> &RgbIn)
