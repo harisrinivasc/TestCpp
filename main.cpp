@@ -522,6 +522,8 @@ bool FixedPntArray(const vector<int> &In, const int begin, const int end);
 bool QuxRgb(list<int> &RgbIn);
 void CheckCustDrinksComb(int currdrink, unordered_set<int> &CustSet, vector<unordered_set<int>> &MinDrinks, const vector<vector<int>> &DrinksList, unordered_set<int> &BestDrink);
 bool MyCandSort(const pair<int,int> &A, const pair<int,int> &B);
+int FindPosSortedArray(const vector<int> &In, const int begin, const int end, const int num);
+vector<int> GetLockNextComb(const int curr, const int NumDigits);
 
 class TempCl;
 class TempCl
@@ -5785,7 +5787,153 @@ int main(int argc, const char * argv[])
     sort(topcandidate.begin(), topcandidate.end(), MyCandSort);
     */
     
+    /*
+    //DCP314 - You are the technical director of WSPT radio, serving listeners nationwide. For simplicity's sake we can consider each listener to live along a horizontal line stretching from 0 (west) to 1000 (east).
+    //Given a list of N listeners, and a list of M radio towers, each placed at various locations along this line, determine what the minimum broadcast range would have to be in order for each listener's home to be covered.
+    //For example, suppose listeners = [1, 5, 11, 20], and towers = [4, 8, 15]. In this case the minimum range would be 5, since that would be required for the tower at position 15 to reach the listener at position 20.
+    vector<int> towers = {15,4,8};
+    const vector<int> listeners = {20,1,11,5};
+    
+    //sort list of towers
+    sort(towers.begin(), towers.end());
+    
+    //for all listeners, find the closest tower and keep track of the max. distance
+    int maxdist = INT_MIN, mindist = INT_MAX;
+    int listidx = 0;
+    for(int i = 0; i < listeners.size(); ++i)
+    {
+        listidx = FindPosSortedArray(towers, 0, towers.size()-1, listeners[i]);
+        mindist = INT_MAX;
+        
+        mindist = min( mindist, abs(listeners[i] - towers[listidx]) );
+        if(listidx > 0)
+            mindist = min( mindist, abs(listeners[i] - towers[listidx-1]) );
+        if(listidx < towers.size()-1)
+            mindist = min( mindist, abs(listeners[i] - towers[listidx+1]) );
+        
+        maxdist = max( maxdist, mindist );
+    }
+    cout << maxdist << endl;
+    */
+    
+    /*
+    //DCP313 - You are given a circular lock with three wheels, each of which display the numbers 0 through 9 in order. Each of these wheels rotate clockwise and counterclockwise.
+    //In addition, the lock has a certain number of "dead ends", meaning that if you turn the wheels to one of these combinations, the lock becomes stuck in that state and cannot be opened.
+    //Let us consider a "move" to be a rotation of a single wheel by one digit, in either direction. Given a lock initially set to 000, a target combination, and a list of dead ends, write a function that returns the minimum number of moves required to reach the target state, or None if this is impossible.
+    vector<int> NextComb = GetLockNextComb(999, 3);
+    vector<bool> Visited (1000, false);
+    unordered_set<int> Deadends = {554,556,545,565,455,655};
+    const int Dest = 555;
+    int NumSteps = 0, CurrComb;
+    
+    //mark all deadends as already visited
+    for(auto i = Deadends.cbegin(); i != Deadends.cend(); ++i)
+        Visited[*i] = true;
+    
+    queue<int> q1, q2;
+    queue<int> *Currq = &q1;
+    bool UsingQ1 = true;
+    q1.push(0);
+    
+    while(!q1.empty() || !q2.empty())
+    {
+        CurrComb = Currq->front();
+        Currq->pop();
+        Visited[CurrComb] = true;
+        
+        if(CurrComb == Dest)
+        {
+            cout << "Reached Dest!!! " << NumSteps << endl;
+            break;
+        }
+        
+        NextComb = GetLockNextComb(CurrComb, 3);
+        for(const auto &i : NextComb)
+        {
+            if(!Visited[i])
+            {
+                if(UsingQ1)
+                    q2.push(i);
+                else
+                    q1.push(i);
+            }
+        }
+        
+        if(Currq->empty())
+        {
+            if(q1.empty())
+            {
+                UsingQ1 = false;
+                Currq = &q2;
+            }
+            else
+            {
+                UsingQ1 = true;
+                Currq = &q1;
+            }
+            ++NumSteps;
+        }
+    }
+    */
+    
     return 0;
+}
+
+vector<int> GetLockNextComb(const int curr, const int NumDigits)
+{
+    vector<int> Comb, IntDigits;
+    Comb.reserve(NumDigits * 2);
+    IntDigits.reserve(NumDigits);
+    
+    int digit, newnum;
+    for(int i = 0; i < NumDigits; ++i)
+    {
+        digit = curr / static_cast<int>(pow(10,i));
+        digit %= 10;
+        IntDigits.push_back(digit);
+    }
+    
+    for(int i = 0; i < IntDigits.size(); ++i)
+    {
+        //reduce digit by 1
+        --IntDigits[i];
+        if(IntDigits[i] < 0)
+            IntDigits[i] += 10;
+        
+        newnum = 0;
+        for(int j = 0; j < IntDigits.size(); ++j)
+            newnum += (static_cast<int>(pow(10,j)) * IntDigits[j]);
+        Comb.push_back(newnum);
+     
+        //increase digit by 2
+        IntDigits[i] += 2;
+        IntDigits[i] %= 10;
+        
+        newnum = 0;
+        for(int j = 0; j < IntDigits.size(); ++j)
+            newnum += (static_cast<int>(pow(10,j)) * IntDigits[j]);
+        Comb.push_back(newnum);
+        
+        //goback to original digit (reduce by 1)
+        --IntDigits[i];
+        if(IntDigits[i] < 0)
+            IntDigits[i] += 10;
+    }
+    
+    return Comb;
+}
+
+int FindPosSortedArray(const vector<int> &In, const int begin, const int end, const int num)
+{
+    if(begin >= end)
+        return begin;
+    
+    int mid = begin+end;
+    mid >>= 1;
+    
+    if(num <= In[mid])
+        return FindPosSortedArray(In, begin, mid, num);
+    return FindPosSortedArray(In, mid+1, end, num);
 }
 
 bool MyCandSort(const pair<int,int> &A, const pair<int,int> &B)
